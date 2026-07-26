@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #f8f9fa;
+  --color-foreground: #111827;
+  
+  /* Primary Teal/Cyan Theme */
+  --color-primary: #0d9488;         /* Teal 600 */
+  --color-primary-hover: #0f766e;   /* Teal 700 */
+  --color-primary-light: #f0fdfa;   /* Teal 50 */
+  
+  /* Accent / Secondary */
+  --color-accent-cyan: #06b6d4;
+  --color-accent-indigo: #4f46e5;
+  
+  /* Surfaces & Cards */
+  --color-card: #ffffff;
+  --color-card-border: #f3f4f6;
+  --color-card-hoverBorder: #5eead4; /* Teal 300 */
+  
+  /* Text Muted */
+  --color-muted: #6b7280;
+}
+
+:root {
+  --background: #f8f9fa;
+  --foreground: #111827;
+  --primary: #0d9488;
+  --primary-hover: #0f766e;
+  --primary-light: #f0fdfa;
+  --card-bg: #ffffff;
+  --card-border: #f3f4f6;
+  --card-border-hover: #5eead4;
+  --muted: #6b7280;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom Scrollbar Utilities for Sleek Sliders */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Hide Scrollbar helper */
+.hide-scroll-bar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scroll-bar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
