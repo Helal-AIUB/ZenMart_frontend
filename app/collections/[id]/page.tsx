@@ -10,16 +10,12 @@ export default function CollectionProductsPage() {
   const params = useParams();
   const collectionId = params.id;
 
-  const {
-    data: products,
-    isLoading,
-    error,
-  } = useQuery<Product[]>({
-    queryKey: ["products", collectionId],
-    queryFn: () =>
-      apiClient
-        .get(`/products/?collection_id=${collectionId}`)
-        .then((res) => res.data),
+  const { data: products, isLoading, error } = useQuery({
+    queryKey: ['collection_products', collectionId],
+    queryFn: async () => {
+      const res = await apiClient.get(`/products/?collection_id=${collectionId}`);
+      return res.data.results || res.data;
+    },
   });
 
   if (isLoading)
@@ -48,6 +44,8 @@ export default function CollectionProductsPage() {
       </div>
     );
 
+  const safeProducts = Array.isArray(products) ? products : [];
+   
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12 min-h-screen">
       {/* Header Banner */}
@@ -62,12 +60,12 @@ export default function CollectionProductsPage() {
         </div>
         <div className="bg-card border border-card-border px-4 py-2 rounded-xl shadow-xs">
           <p className="text-xs font-bold text-muted">
-            {products?.length || 0} items available
+            {safeProducts.length} items available
           </p>
         </div>
       </div>
 
-      {products?.length === 0 ? (
+      {safeProducts.length === 0 ? (
         <div className="text-center py-24 bg-card rounded-[2rem] border border-card-border shadow-sm">
           <div className="w-16 h-16 bg-primary-light text-primary rounded-2xl flex items-center justify-center mx-auto text-2xl mb-4">
             📦
@@ -81,7 +79,7 @@ export default function CollectionProductsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {products?.map((product) => {
+          {safeProducts.map((product: any) => {
             const currentPrice = Math.round(Number(product.unit_price));
             const originalPrice = Math.round(Number(product.unit_price) * 1.35);
 

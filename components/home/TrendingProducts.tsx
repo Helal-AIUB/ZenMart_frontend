@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import ProductSkeleton from '../ui/ProductSkeleton';
 
-export default function TrendingProducts({ products, isLoading }: { products: any[], isLoading: boolean }) {
+export default function TrendingProducts({ products, isLoading }: { products: any, isLoading: boolean }) {
   const trendingScrollRef = useRef<HTMLDivElement>(null);
 
   const scrollTrending = (direction: 'left' | 'right') => {
@@ -13,6 +13,10 @@ export default function TrendingProducts({ products, isLoading }: { products: an
       trendingScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
+
+  const validProducts = Array.isArray(products) 
+    ? products 
+    : products?.results || products?.data || [];
 
   return (
     <div className="mt-16">
@@ -40,7 +44,7 @@ export default function TrendingProducts({ products, isLoading }: { products: an
           {isLoading ? (
             Array(5).fill(0).map((_, i) => <ProductSkeleton key={i} />)
           ) : (
-            products?.map((product) => {
+            validProducts?.map((product: any) => {
               const currentPrice = Math.round(Number(product.unit_price));
               const originalPrice = Math.round(Number(product.unit_price) * 1.35);
 

@@ -1,10 +1,10 @@
-// frontend/src/components/home/FlashSale.tsx
+
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import ProductSkeleton from '../ui/ProductSkeleton';
 import Link from 'next/link';
 
-export default function FlashSale({ products, isLoading }: { products: any[], isLoading: boolean }) {
+export default function FlashSale({ products, isLoading }: { products: any, isLoading: boolean }) {
   const [timeLeft, setTimeLeft] = useState({ hours: 12, minutes: 45, seconds: 30 });
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -26,6 +26,10 @@ export default function FlashSale({ products, isLoading }: { products: any[], is
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
+
+  const validProducts = Array.isArray(products) 
+    ? products 
+    : products?.results || products?.data || [];
 
   return (
     <section className="my-14 bg-card rounded-[2.5rem] shadow-2xl overflow-hidden relative border border-card-border group">
@@ -69,7 +73,7 @@ export default function FlashSale({ products, isLoading }: { products: any[], is
           {isLoading ? (
             Array(5).fill(0).map((_, i) => <ProductSkeleton key={i} />)
           ) : (
-            products?.slice(0, 8).map((product) => {
+            validProducts?.slice(0, 8).map((product: any) => {
               const currentPrice = Math.round(Number(product.unit_price));
               const originalPrice = Math.round(Number(product.unit_price) * 2);
 

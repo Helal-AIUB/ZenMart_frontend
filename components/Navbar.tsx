@@ -1,19 +1,27 @@
-// frontend/src/components/Navbar.tsx
 'use client';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useCartStore } from '../store/useCartStore';
 
 export default function Navbar() {
-  // স্ক্রল করলে নেভবারের ডিজাইন চেঞ্জ করার জন্য স্টেট
+  const { openCart, cartItems, cartId, fetchCart } = useCartStore();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    if (cartId) {
+      fetchCart();
+    }
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [cartId, fetchCart]);
+
+  const totalItems = cartItems?.reduce((total: number, item: any) => total + item.quantity, 0) || 0;
 
   return (
     <nav 
@@ -33,7 +41,7 @@ export default function Navbar() {
           <span className="w-2 h-2 rounded-full bg-yellow-400 mb-4 animate-pulse"></span>
         </Link>
         
-        {/* 2. Interactive Search Bar (Hidden on very small screens) */}
+        {/* 2. Interactive Search Bar */}
         <div className="hidden md:block flex-1 max-w-2xl relative group">
           <input 
             type="text" 
@@ -58,10 +66,9 @@ export default function Navbar() {
           {/* Vertical Divider */}
           <div className="hidden md:block h-8 w-px bg-gray-200"></div>
 
-          {/* User Profile (Hello, Sign In) */}
+          {/* User Profile */}
           <Link href="#" className="flex items-center gap-2 group cursor-pointer">
             <div className="p-2 rounded-full bg-gray-50 group-hover:bg-teal-50 border border-gray-100 transition-colors duration-300 text-gray-600 group-hover:text-teal-600">
-              {/* User SVG Icon */}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             </div>
             <div className="hidden md:flex flex-col">
@@ -70,18 +77,18 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Shopping Cart Icon with Badge */}
-          <Link href="/cart" className="relative group p-2">
+          {/* Shopping Cart Icon with Dynamic Badge */}
+          <button onClick={openCart} className="relative group p-2 focus:outline-none cursor-pointer">
             <div className="text-gray-600 group-hover:text-teal-600 transition-colors duration-300 transform group-hover:scale-110">
-              {/* Cart SVG Icon */}
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             </div>
             
-            {/* The Notification Badge (Red Circle) */}
-            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-extrabold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white shadow-md animate-[bounce_2s_infinite]">
-              3
-            </span>
-          </Link>
+            {mounted && totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-extrabold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white shadow-md animate-[bounce_2s_infinite]">
+                {totalItems > 99 ? '99+' : totalItems}
+              </span>
+            )}
+          </button>
 
         </div>
       </div>
