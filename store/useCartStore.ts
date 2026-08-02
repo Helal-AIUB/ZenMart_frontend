@@ -1,3 +1,4 @@
+// frontend/src/store/useCartStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiClient } from '@/services/apiClient';
@@ -9,7 +10,7 @@ interface CartStore {
   openCart: () => void;
   closeCart: () => void;
   fetchCart: () => Promise<void>;
-  addToCart: (productId: number, quantity: number) => Promise<void>;
+  addToCart: (productId: number, quantity: number, isRetry?: boolean) => Promise<void>; // isRetry যুক্ত করা হয়েছে
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
 }
@@ -37,14 +38,16 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      addToCart: async (productId: number, quantity: number) => {
+      addToCart: async (productId: number, quantity: number, isRetry = false) => {
         let { cartId } = get();
         try {
           if (!cartId) {
             const res = await apiClient.post('/carts/');
-            cartId = res.data.id;
+            cartId = res.data.id || res.data.cart_id; 
+            if (!cartId) throw new Error("Cart ID is missing from API response!");
             set({ cartId });
           }
+          
           await apiClient.post(`/carts/${cartId}/items/`, {
             product_id: productId, 
             quantity: quantity
@@ -52,11 +55,13 @@ export const useCartStore = create<CartStore>()(
           
           await get().fetchCart();
         } catch (error: any) {
-          if (error.response?.status === 404 || error.response?.status === 500) {
+          if ((error.response?.status === 404 || error.response?.status === 500) && !isRetry) {
+            console.warn("Ghost cart detected. Healing cart and retrying...");
             set({ cartId: null, cartItems: [] });
-            await get().addToCart(productId, quantity);
+            await get().addToCart(productId, quantity, true); 
           } else {
-            throw error;
+            console.error("Failed to add to cart. Backend Error:", error.response?.data || error.message);
+            throw error; 
           }
         }
       },

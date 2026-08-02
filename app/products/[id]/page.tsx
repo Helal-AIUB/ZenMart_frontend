@@ -1,4 +1,3 @@
-// frontend/src/app/products/[id]/page.tsx
 "use client";
 
 import { useParams } from "next/navigation";
@@ -79,22 +78,31 @@ export default function ProductDetailsPage() {
       apiClient.get(`/products/${productId}/`).then((res) => res.data),
   });
 
-  // 2. Fetch Related Products
-  const { data: relatedProducts, isLoading: loadingRelated } = useQuery<
-    Product[]
-  >({
+  // 2. Fetch Related Products (FIXED: Added safety checks to prevent undefined error)
+  const { data: relatedProducts, isLoading: loadingRelated } = useQuery<Product[]>({
     queryKey: ["related_products", product?.collection],
     queryFn: () =>
       apiClient
         .get(`/products/?collection_id=${product?.collection}`)
-        .then((res) => res.data.results),
+        .then((res) => {
+          // যদি পেজিনেটেড API হয়, তাহলে results রিটার্ন করবে
+          if (res.data && res.data.results) {
+            return res.data.results;
+          }
+          // যদি পেজিনেটেড না হয়ে সরাসরি অ্যারে আসে
+          if (Array.isArray(res.data)) {
+            return res.data;
+          }
+          // কোনো ডেটা না পেলে বা অন্য কোনো ফরম্যাট হলে ফাঁকা অ্যারে রিটার্ন করবে
+          return [];
+        }),
     enabled: !!product?.collection,
   });
 
-  // Filter out the current product from the related list and grab top 5
-  const similarItems = relatedProducts
-    ?.filter((p: Product) => String(p.id) !== String(productId))
-    .slice(0, 5);
+  // Filter out the current product from the related list and grab top 5 (FIXED: Array check)
+  const similarItems = Array.isArray(relatedProducts)
+    ? relatedProducts.filter((p: Product) => String(p.id) !== String(productId)).slice(0, 5)
+    : [];
 
   if (loadingProduct)
     return (
@@ -260,7 +268,7 @@ export default function ProductDetailsPage() {
                     onClick={handleAddToCart}
                     className={`flex-1 py-4 rounded-2xl font-black text-sm tracking-wide transition-all duration-300 shadow-lg flex items-center justify-center gap-2 ${
                       isAdded
-                        ? "bg-emerald-500 text-white shadow-emerald-500/30" // অ্যাড হওয়ার পর সবুজ রঙ
+                        ? "bg-emerald-500 text-white shadow-emerald-500/30"
                         : product.inventory > 0 && !isAdding
                           ? "bg-primary text-white hover:bg-primary-hover hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
                           : "bg-primary-light text-primary cursor-not-allowed shadow-none"
