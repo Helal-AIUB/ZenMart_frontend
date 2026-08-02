@@ -1,46 +1,78 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #f8f9fa;
-  --color-foreground: #111827;
+  /* Background & Foreground */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   
-  /* Primary Teal/Cyan Theme */
-  --color-primary: #0d9488;         /* Teal 600 */
-  --color-primary-hover: #0f766e;   /* Teal 700 */
-  --color-primary-light: #f0fdfa;   /* Teal 50 */
+  /* Primary Brand Colors */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
   
-  /* Accent / Secondary */
-  --color-accent-cyan: #06b6d4;
-  --color-accent-indigo: #4f46e5;
+  /* Secondary & Accent Colors */
+  --color-secondary: var(--secondary);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-accent-indigo: var(--accent-indigo);
   
-  /* Surfaces & Cards */
-  --color-card: #ffffff;
-  --color-card-border: #f3f4f6;
-  --color-card-hoverBorder: #5eead4; /* Teal 300 */
+  /* Status & Badge Colors (For Sales & Offers) */
+  --color-badge-red: var(--badge-red);
+  --color-badge-orange: var(--badge-orange);
   
-  /* Text Muted */
-  --color-muted: #6b7280;
+  /* Typography Colors */
+  --color-text-dark: var(--text-dark);
+  --color-text-gray: var(--text-gray);
+  --color-text-light: var(--text-light);
+  --color-muted: var(--muted);
+  
+  /* Surfaces & Borders */
+  --color-card: var(--card-bg);
+  --color-border-color: var(--border-color);
+  --color-card-border: var(--card-border);
+  --color-card-border-hover: var(--card-border-hover);
 }
 
 :root {
+  /* Global Background & Foreground */
   --background: #f8f9fa;
   --foreground: #111827;
-  --primary: #0d9488;
-  --primary-hover: #0f766e;
-  --primary-light: #f0fdfa;
-  --card-bg: #ffffff;
-  --card-border: #f3f4f6;
-  --card-border-hover: #5eead4;
-  --muted: #6b7280;
+  
+  /* Primary Brand Colors (Deep Teal/Green Theme) */
+  --primary: #0d9488;         /* Teal 600 - Main Buttons & Highlights */
+  --primary-hover: #0f766e;   /* Teal 700 - Button Hover State */
+  --primary-light: #f0fdfa;   /* Teal 50 - Light Backgrounds/Highlights */
+  
+  /* Secondary & Accent Colors */
+  --secondary: #f0fdf4;       /* Light Mint Green for sections/badges */
+  --accent-cyan: #06b6d4;
+  --accent-indigo: #4f46e5;
+  
+  /* Status & Badge Colors */
+  --badge-red: #ef4444;       /* Red for Flash Sale / Discount Badges */
+  --badge-orange: #f97316;    /* Orange for Hot Deals */
+  
+  /* Typography Colors */
+  --text-dark: #1f2937;       /* Gray 800 - Main Headings */
+  --text-gray: #4b5563;       /* Gray 600 - Paragraphs & Subtitles */
+  --text-light: #9ca3af;      /* Gray 400 - Placeholder & Small Text */
+  --muted: #6b7280;           /* Gray 500 - Muted Elements */
+  
+  /* Borders & Surfaces */
+  --card-bg: #ffffff;         /* Pure white for cards */
+  --border-color: #e5e7eb;    /* Standard dividers & borders */
+  --card-border: #f3f4f6;     /* Subtle card borders */
+  --card-border-hover: #5eead4; /* Teal 300 - Card hover borders */
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar Utilities for Sleek Sliders */
+/* Custom Scrollbar Utilities for Sleek Sliders & Drawers */
 .custom-scrollbar::-webkit-scrollbar {
   height: 6px;
   width: 6px;
@@ -59,7 +91,7 @@ body {
   background: #94a3b8;
 }
 
-/* Hide Scrollbar helper */
+/* Hide Scrollbar helper (Perfect for category navigation or carousels) */
 .hide-scroll-bar::-webkit-scrollbar {
   display: none;
 }
