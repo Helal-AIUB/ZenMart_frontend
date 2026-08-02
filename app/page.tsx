@@ -1,3 +1,4 @@
+// frontend/app/page.tsx
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
@@ -6,7 +7,7 @@ import { Product } from '@/types/product';
 import HeroCarousel from '@/components/home/HeroCarousel';
 import TrustBadges from '@/components/home/TrustBadges';
 import FlashSale from '@/components/home/FlashSale';
-import TrendingProducts from '@/components/home/TrendingProducts';
+import NewArrivals from '@/components/home/NewArrivals';
 
 export default function Home() {
   const { data: products, isLoading: loadingProducts } = useQuery<Product[]>({
@@ -15,23 +16,23 @@ export default function Home() {
   });
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 min-h-screen">
+    <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-8 min-h-screen font-sans">
       
       {/* Hero Section */}
       <HeroCarousel />
 
-      {/* Main Content Area (Full Width without Sidebar) */}
+      {/* Main Content Area */}
       <section className="w-full mt-6">
         
         {/* Flash Sale Dynamic Section */}
         <FlashSale products={products || []} isLoading={loadingProducts} />
 
-        {/* Trending Products Section */}
-        <TrendingProducts products={products || []} isLoading={loadingProducts} />
+        {/* New Arrivals Section */}
+        <NewArrivals />
 
       </section>
 
-      {/* Trust Badges Footer Area */}
+      {/* Trust Badges Area */}
       <TrustBadges />
 
     </main>
