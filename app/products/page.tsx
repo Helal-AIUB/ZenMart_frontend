@@ -18,14 +18,14 @@ export default function ProductsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['all_products_page', page],
     queryFn: async () => {
-      const res = await apiClient.get(`/products/?page=${page}`);
+      const res = await apiClient.get(`/store/products/?page=${page}`);
       return res.data;
     },
   });
 
   const products = Array.isArray(data) ? data : data?.results || [];
   const totalCount = data?.count || 0;
-  const pageSize = 10; // Django-র ডিফল্ট পেজ সাইজ বা আপনার ব্যাকএন্ড অনুযায়ী
+  const pageSize = 10; 
   const totalPages = Math.ceil(totalCount / pageSize);
 
   const handleAddToCart = async (product: any) => {

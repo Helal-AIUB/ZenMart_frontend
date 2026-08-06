@@ -24,7 +24,7 @@ export default function NewArrivals() {
   const { data: collections = [] } = useQuery({
     queryKey: ["home_collections"],
     queryFn: async () => {
-      const res = await apiClient.get("/collections/");
+      const res = await apiClient.get("/store/collections/");
       return res.data.results || res.data;
     },
   });
@@ -35,8 +35,8 @@ export default function NewArrivals() {
     queryFn: async () => {
       const endpoint =
         selectedCategory === "all"
-          ? "/products/"
-          : `/products/?collection_id=${selectedCategory}`;
+          ? "store/products/"
+          : `store/products/?collection_id=${selectedCategory}`;
       const res = await apiClient.get(endpoint);
       return res.data;
     },

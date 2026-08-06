@@ -1,4 +1,3 @@
-// frontend/app/products/[id]/page.tsx
 "use client";
 
 import { useParams } from "next/navigation";
@@ -21,7 +20,6 @@ export default function ProductDetailsPage() {
   const { addToCart } = useCartStore();
   const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlistStore();
 
-  // Check if current product is in wishlist
   const isWishlisted = wishlistItems.some(
     (item: any) => String(item.id) === String(productId)
   );
@@ -75,7 +73,6 @@ export default function ProductDetailsPage() {
     }
   };
 
-  // 1. Fetch Main Product
   const {
     data: product,
     isLoading: loadingProduct,
@@ -83,15 +80,14 @@ export default function ProductDetailsPage() {
   } = useQuery<Product>({
     queryKey: ["product", productId],
     queryFn: () =>
-      apiClient.get(`/products/${productId}/`).then((res) => res.data),
+      apiClient.get(`/store/products/${productId}/`).then((res) => res.data),
   });
 
-  // 2. Fetch Related Products
   const { data: relatedProducts, isLoading: loadingRelated } = useQuery<Product[]>({
     queryKey: ["related_products", product?.collection],
     queryFn: () =>
       apiClient
-        .get(`/products/?collection_id=${product?.collection}`)
+        .get(`/store/products/?collection_id=${product?.collection}`)
         .then((res) => {
           if (res.data && res.data.results) {
             return res.data.results;
@@ -142,7 +138,6 @@ export default function ProductDetailsPage() {
 
   return (
     <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-28 min-h-screen font-sans">
-      {/* Breadcrumb Navigation */}
       <div className="mb-6 text-xs font-semibold text-muted flex items-center gap-2">
         <Link href="/" className="hover:text-primary transition-colors">
           Home
@@ -156,20 +151,15 @@ export default function ProductDetailsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* LEFT & CENTER: Product Gallery & Main Details (Cols 1-8) */}
         <div className="lg:col-span-8 flex flex-col gap-8">
-          
           <div className="bg-card rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-card-border p-6 md:p-10 grid grid-cols-1 md:grid-cols-12 gap-8 relative overflow-hidden">
             
-            {/* Gallery Column (5 Cols) */}
             <div className="md:col-span-6 flex flex-col gap-4">
               <div className="bg-[#f8f9fa] rounded-[2rem] h-[360px] flex items-center justify-center text-7xl border border-card-border relative overflow-hidden group">
                 <span className="absolute top-4 left-4 bg-badge-red text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm">
                   -27% OFF
                 </span>
 
-                {/* Wishlist Heart Button */}
                 <button
                   onClick={() => {
                     if (isWishlisted) {
@@ -203,7 +193,6 @@ export default function ProductDetailsPage() {
                   📦
                 </span>
 
-                {/* Slider Navigation Chevrons */}
                 <button className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-card-border flex items-center justify-center text-xs shadow-xs hover:bg-primary hover:text-white transition-all cursor-pointer">
                   ❮
                 </button>
@@ -212,7 +201,6 @@ export default function ProductDetailsPage() {
                 </button>
               </div>
 
-              {/* Thumbnails Row */}
               <div className="grid grid-cols-4 gap-3">
                 {[1, 2, 3].map((_, i) => (
                   <div key={i} className="h-20 bg-[#f8f9fa] rounded-2xl border-2 border-primary flex items-center justify-center text-2xl cursor-pointer shadow-2xs">
@@ -225,7 +213,6 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* Info Column (6 Cols) */}
             <div className="md:col-span-6 flex flex-col justify-between">
               <div>
                 <span className="text-[10px] font-black text-primary uppercase tracking-[0.15em] bg-primary-light px-3 py-1 rounded-md inline-block mb-3">
@@ -236,7 +223,6 @@ export default function ProductDetailsPage() {
                   {product.title}
                 </h1>
 
-                {/* Rating & Reviews */}
                 <div className="flex items-center gap-2 mb-4 text-xs">
                   <div className="flex items-center text-yellow-400 gap-0.5">
                     {[...Array(5)].map((_, i) => (
@@ -248,7 +234,6 @@ export default function ProductDetailsPage() {
                   </span>
                 </div>
 
-                {/* Price & Stock status */}
                 <div className="flex items-baseline gap-3 mb-4 pb-4 border-b border-card-border/60">
                   <span className="text-3xl font-black text-primary tracking-tight">
                     ${currentPrice}
@@ -267,14 +252,12 @@ export default function ProductDetailsPage() {
                   )}
                 </div>
 
-                {/* Description */}
                 <p className="text-muted text-xs sm:text-sm mb-6 leading-relaxed">
                   {product.description
                     ? product.description
                     : "volutpat in congue etiam justo etiam pretium iaculis justo in hac habitasse platea dictumst etiam faucibus."}
                 </p>
 
-                {/* Trust Badges Mini Grid */}
                 <div className="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-primary-light/40 border border-card-border mb-6">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-extrabold text-foreground">Free Shipping</span>
@@ -290,7 +273,6 @@ export default function ProductDetailsPage() {
                   </div>
                 </div>
 
-                {/* Key Features List */}
                 <div className="flex flex-col gap-2">
                   <h4 className="text-xs font-black uppercase text-foreground tracking-wider mb-1">
                     Key Features
@@ -308,18 +290,84 @@ export default function ProductDetailsPage() {
             </div>
 
           </div>
+
+          {/* Similar Products Section (Moved below product details/thumbnails on the left column) */}
+          <div className="bg-card rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-card-border p-6 md:p-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-card-border">
+              <h3 className="text-base font-black text-foreground uppercase tracking-wider">
+                Similar Products
+              </h3>
+              {product.collection && (
+                <Link
+                  href={`/products?collection_id=${product.collection}`}
+                  className="text-xs font-bold text-primary hover:underline"
+                >
+                  View all
+                </Link>
+              )}
+            </div>
+
+            {loadingRelated ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {Array(4).fill(0).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-3 animate-pulse p-4 bg-gray-50 rounded-2xl">
+                    <div className="h-32 bg-card-border/40 rounded-xl"></div>
+                    <div className="h-3 bg-card-border/40 rounded w-full"></div>
+                    <div className="h-3 bg-card-border/40 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : similarItems && similarItems.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {similarItems.map((item) => {
+                  const itemPrice = Math.round(Number(item.unit_price));
+                  const itemOriginal = Math.round(itemPrice * 1.35);
+                  return (
+                    <Link
+                      href={`/products/${item.id}`}
+                      key={item.id}
+                      className="flex flex-col gap-3 p-4 rounded-2xl bg-[#f8f9fa] hover:bg-primary-light/40 border border-card-border transition-all group"
+                    >
+                      <div className="w-full h-32 bg-white rounded-xl flex items-center justify-center text-3xl group-hover:scale-105 transition-transform border border-card-border">
+                        📦
+                      </div>
+                      <div className="flex flex-col flex-1 justify-between">
+                        <h4 className="text-xs font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
+                          {item.title}
+                        </h4>
+                        <div className="flex items-center text-yellow-400 text-[10px] gap-0.5 mb-2">
+                          {[...Array(5)].map((_, idx) => (
+                            <span key={idx}>★</span>
+                          ))}
+                          <span className="text-muted ml-1 font-medium">(18)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-primary font-black text-sm">
+                            ${itemPrice}
+                          </span>
+                          <span className="text-xs text-muted line-through">
+                            ${itemOriginal}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-muted py-6 text-center font-medium">
+                No similar products found.
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* RIGHT COLUMN: Purchase Options & Similar Products (Cols 9-12) */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-          
-          {/* Purchase Box Card */}
           <div className="bg-card rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-card-border p-6 sticky top-28">
             <h3 className="text-sm font-black text-foreground mb-4 pb-3 border-b border-card-border uppercase tracking-wider">
               Purchase Options
             </h3>
 
-            {/* Quantity Selector */}
             <div className="flex flex-col gap-2 mb-4">
               <span className="text-xs font-bold text-muted uppercase tracking-wider">
                 Quantity
@@ -349,7 +397,6 @@ export default function ProductDetailsPage() {
               </div>
             </div>
 
-            {/* Total Price Preview */}
             <div className="flex items-center justify-between mb-6 p-3 rounded-2xl bg-gray-50 border border-card-border">
               <span className="text-xs text-muted font-bold uppercase tracking-wider">
                 Total Price
@@ -359,7 +406,6 @@ export default function ProductDetailsPage() {
               </span>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-col gap-3">
               <button
                 disabled={product.inventory === 0 || isAdding || isAdded}
@@ -399,79 +445,6 @@ export default function ProductDetailsPage() {
               </button>
             </div>
           </div>
-
-          {/* Similar Products Card */}
-          <div className="bg-card rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-card-border p-6">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-card-border">
-              <h3 className="text-sm font-black text-foreground uppercase tracking-wider">
-                Similar Products
-              </h3>
-              {product.collection && (
-                <Link
-                  href={`/collections/${product.collection}`}
-                  className="text-xs font-bold text-primary hover:underline"
-                >
-                  View all
-                </Link>
-              )}
-            </div>
-
-            {loadingRelated ? (
-              <div className="space-y-3">
-                {Array(3).fill(0).map((_, i) => (
-                  <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="w-14 h-14 bg-card-border/40 rounded-xl"></div>
-                    <div className="flex-1 space-y-2 py-1">
-                      <div className="h-3 bg-card-border/40 rounded w-full"></div>
-                      <div className="h-3 bg-card-border/40 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : similarItems && similarItems.length > 0 ? (
-              <div className="flex flex-col gap-3">
-                {similarItems.map((item) => {
-                  const itemPrice = Math.round(Number(item.unit_price));
-                  const itemOriginal = Math.round(itemPrice * 1.35);
-                  return (
-                    <Link
-                      href={`/products/${item.id}`}
-                      key={item.id}
-                      className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-primary-light/60 border border-transparent hover:border-card-hoverBorder transition-all group"
-                    >
-                      <div className="w-14 h-14 bg-[#f8f9fa] rounded-2xl flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform border border-card-border">
-                        📦
-                      </div>
-                      <div className="flex flex-col flex-1">
-                        <h4 className="text-xs font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-0.5">
-                          {item.title}
-                        </h4>
-                        <div className="flex items-center text-yellow-400 text-[9px] gap-0.5 mb-1">
-                          {[...Array(5)].map((_, idx) => (
-                            <span key={idx}>★</span>
-                          ))}
-                          <span className="text-muted ml-1 font-medium">(18)</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-primary font-black text-xs">
-                            ${itemPrice}
-                          </span>
-                          <span className="text-[10px] text-muted line-through">
-                            ${itemOriginal}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-xs text-muted py-4 text-center font-medium">
-                No similar products found.
-              </p>
-            )}
-          </div>
-
         </div>
 
       </div>

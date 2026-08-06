@@ -12,7 +12,7 @@ import NewArrivals from '@/components/home/NewArrivals';
 export default function Home() {
   const { data: products, isLoading: loadingProducts } = useQuery<Product[]>({
     queryKey: ['products'],
-    queryFn: () => apiClient.get('/products/').then((res) => res.data),
+    queryFn: () => apiClient.get('store/products/').then((res) => res.data),
   });
 
   return (

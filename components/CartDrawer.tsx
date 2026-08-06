@@ -91,7 +91,7 @@ export default function CartDrawer() {
                     <div className="flex items-center bg-background border border-card-border rounded-lg overflow-hidden">
                       <button 
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        disabled={item.quantity <= 1} // ১ এর নিচে যেতে দিবে না
+                        disabled={item.quantity <= 1} 
                         className="w-7 h-7 flex items-center justify-center text-foreground hover:bg-card hover:text-primary transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         -

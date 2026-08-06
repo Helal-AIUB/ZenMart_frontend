@@ -3,26 +3,45 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useCartStore } from "../store/useCartStore";
 import { apiClient } from "@/services/apiClient";
 import { useWishlistStore } from "@/store/useWishlistStore";
-import WishlistDrawer from "@/components/WishlistDrawer"; 
+import WishlistDrawer from "@/components/WishlistDrawer";
 
 export default function Navbar() {
+  const router = useRouter();
   const { openCart, cartItems, cartId, fetchCart } = useCartStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+
   const { wishlistItems, openWishlist } = useWishlistStore();
   const wishlistCount = wishlistItems.length;
 
-  // Fetch Categories from Database
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const res = await apiClient.get("/collections/");
+      const res = await apiClient.get("/store/collections/");
       return res.data.results || res.data;
     },
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => {
+      try {
+        const res = await apiClient.get("/auth/users/me/");
+        return res.data;
+      } catch (error) {
+        return null;
+      }
+    },
+    retry: false,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   useEffect(() => {
@@ -38,6 +57,24 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [cartId, fetchCart]);
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    
+    if (searchQuery.trim()) {
+      params.append("search", searchQuery.trim());
+    }
+    if (selectedCategory) {
+      params.append("collection_id", selectedCategory);
+    }
+
+    if (params.toString()) {
+      router.push(`/products?${params.toString()}`);
+    } else {
+      router.push(`/products`);
+    }
+  };
+
   const totalItems =
     cartItems?.reduce((total: number, item: any) => total + item.quantity, 0) ||
     0;
@@ -51,9 +88,7 @@ export default function Navbar() {
         }`}
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-4">
-          {/* Top Section */}
           <div className="flex justify-between items-center gap-6">
-            {/* Logo */}
             <Link href="/" className="flex items-center gap-1 shrink-0 group">
               <span className="text-3xl font-black text-primary tracking-tight group-hover:scale-105 transition-transform duration-300">
                 ZenMart
@@ -61,10 +96,16 @@ export default function Navbar() {
               <span className="w-2 h-2 rounded-full bg-yellow-400 mt-2 animate-pulse"></span>
             </Link>
 
-            {/* Interactive Search Bar (Dynamic Categories) */}
-            <div className="hidden lg:flex flex-1 max-w-3xl border border-border-color rounded-full items-center pl-4 pr-1 h-12 bg-gray-50 focus-within:bg-white focus-within:border-primary focus-within:shadow-sm transition-all">
+            <form 
+              onSubmit={handleSearch}
+              className="hidden lg:flex flex-1 max-w-3xl border border-border-color rounded-full items-center pl-4 pr-1 h-12 bg-gray-50 focus-within:bg-white focus-within:border-primary focus-within:shadow-sm transition-all"
+            >
               <div className="relative flex items-center border-r border-border-color pr-3">
-                <select className="bg-transparent text-sm font-medium text-text-gray focus:outline-none cursor-pointer appearance-none pr-6">
+                <select 
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="bg-transparent text-sm font-medium text-text-gray focus:outline-none cursor-pointer appearance-none pr-6"
+                >
                   <option value="">All Categories</option>
                   {safeCategories.map((category: any) => (
                     <option key={category.id} value={category.id}>
@@ -89,10 +130,15 @@ export default function Navbar() {
 
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for products, brands and more..."
                 className="flex-1 bg-transparent border-none px-4 text-sm text-text-dark placeholder-text-light focus:outline-none focus:ring-0 h-full w-full"
               />
-              <button className="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary-hover transition-colors shrink-0">
+              <button 
+                type="submit" 
+                className="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary-hover transition-colors shrink-0"
+              >
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -107,9 +153,8 @@ export default function Navbar() {
                   />
                 </svg>
               </button>
-            </div>
+            </form>
 
-            {/* Quick Links */}
             <div className="hidden xl:flex items-center gap-6 text-sm font-medium text-text-gray">
               <Link
                 href="#"
@@ -160,9 +205,7 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Action Icons & Profile */}
             <div className="flex items-center gap-5">
-              {/* Single Wishlist Icon (Drawer Trigger with Badge) */}
               <button
                 onClick={openWishlist}
                 className="relative text-text-dark hover:text-primary transition-colors group cursor-pointer"
@@ -188,7 +231,6 @@ export default function Navbar() {
                 )}
               </button>
 
-              {/* Dynamic Cart */}
               <button
                 onClick={openCart}
                 className="relative text-text-dark hover:text-primary transition-colors mr-2 group cursor-pointer"
@@ -213,32 +255,39 @@ export default function Navbar() {
                 )}
               </button>
 
-              {/* User Profile */}
               <Link
-                href="/account"
+                href={user ? "/account" : "/signin"}
                 className="flex items-center gap-3 pl-4 border-l border-border-color group cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-border-color">
-                  <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  </div>
+                  {user ? (
+                    <div className="w-full h-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+                      {user.first_name 
+                        ? user.first_name.charAt(0).toUpperCase() 
+                        : user.username?.charAt(0).toUpperCase()}
+                    </div>
+                  ) : (
+                    <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 <div className="hidden md:flex flex-col">
-                  <span className="text-[11px] font-medium text-text-gray leading-tight group-hover:text-primary transition-colors">
-                    Hi, Sign In
-                  </span>
+                  {/* <span className="text-[11px] font-medium text-text-gray leading-tight group-hover:text-primary transition-colors">
+                    {user ? `Hi, ${user.first_name || user.username}` : "Hi, Sign In"}
+                  </span> */}
                   <div className="flex items-center gap-1">
                     <span className="text-sm font-bold text-text-dark leading-tight group-hover:text-primary transition-colors">
                       Account
@@ -262,7 +311,6 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Bottom Section - Dynamic Categories List */}
           <div
             className={`hidden lg:flex items-center gap-8 text-sm transition-all duration-300 ${
               isScrolled ? "h-0 opacity-0 overflow-hidden mt-0" : "h-10 opacity-100 mt-1"
@@ -311,7 +359,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Wishlist Drawer mounted globally inside Navbar */}
       <WishlistDrawer />
     </>
   );
