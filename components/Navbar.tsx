@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "../store/useCartStore";
@@ -17,6 +17,10 @@ export default function Navbar() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  
+  // অ্যাকাউন্ট ড্রপডাউন টগল করার জন্য স্টেট
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { wishlistItems, openWishlist } = useWishlistStore();
   const wishlistCount = wishlistItems.length;
@@ -29,7 +33,7 @@ export default function Navbar() {
     },
   });
 
-  const { data: user } = useQuery({
+  const { data: user, refetch: refetchUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
       try {
@@ -54,8 +58,35 @@ export default function Navbar() {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // বাইরে ক্লিক করলে ড্রপডাউন বন্ধ হয়ে যাওয়ার লজিক
+    const handleOutsideClick = (event:any) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsAccountOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
   }, [cartId, fetchCart]);
+
+  // পারফেক্ট লগআউট হ্যান্ডলার
+  const handleLogout = async () => {
+    try {
+      // ব্যাকএন্ডে টোকেন বা সেশন ক্লিয়ার করার রিকোয়েস্ট (যদি প্রয়োজন হয়)
+      // HttpOnly cookie হলে ব্যাকএন্ড কুকি ক্লিয়ার করবে, সাথে লোকাল ডাটাও রিফেচ বা ক্লিন করতে পারেন
+      await apiClient.post("/auth/token/logout/").catch(() => {});
+    } catch (error) {
+      console.error("Logout error", error);
+    } finally {
+      setIsAccountOpen(false);
+      refetchUser(); // ইউজার স্টেট রিফেচ করে আনলগইন করে দেওয়া
+      router.push("/signin");
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -255,45 +286,45 @@ export default function Navbar() {
                 )}
               </button>
 
-              <Link
-                href={user ? "/account" : "/signin"}
-                className="flex items-center gap-3 pl-4 border-l border-border-color group cursor-pointer"
-              >
-                <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-border-color">
-                  {user ? (
-                    <div className="w-full h-full bg-primary flex items-center justify-center text-white font-bold text-lg">
-                      {user.first_name 
-                        ? user.first_name.charAt(0).toUpperCase() 
-                        : user.username?.charAt(0).toUpperCase()}
-                    </div>
-                  ) : (
-                    <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                <div className="hidden md:flex flex-col">
-                  {/* <span className="text-[11px] font-medium text-text-gray leading-tight group-hover:text-primary transition-colors">
-                    {user ? `Hi, ${user.first_name || user.username}` : "Hi, Sign In"}
-                  </span> */}
-                  <div className="flex items-center gap-1">
+              {/* ================= ACCOUNT DROPDOWN SECTION ================= */}
+              <div className="relative pl-4 border-l border-border-color" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsAccountOpen(!isAccountOpen)}
+                  className="flex items-center gap-3 group cursor-pointer focus:outline-none"
+                >
+                  <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-border-color">
+                    {user ? (
+                      <div className="w-full h-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+                        {user.first_name 
+                          ? user.first_name.charAt(0).toUpperCase() 
+                          : user.username?.charAt(0).toUpperCase()}
+                      </div>
+                    ) : (
+                      <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="hidden md:flex items-center gap-1">
                     <span className="text-sm font-bold text-text-dark leading-tight group-hover:text-primary transition-colors">
                       Account
                     </span>
                     <svg
-                      className="w-3 h-3 text-text-gray group-hover:text-primary"
+                      className={`w-3 h-3 text-text-gray group-hover:text-primary transition-transform duration-200 ${
+                        isAccountOpen ? "rotate-180" : ""
+                      }`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -306,8 +337,46 @@ export default function Navbar() {
                       />
                     </svg>
                   </div>
-                </div>
-              </Link>
+                </button>
+
+                {/* Dropdown Menu Popup */}
+                {isAccountOpen && (
+                  <div className="absolute right-0 mt-3 w-48 bg-white border border-border-color rounded-xl shadow-xl py-2 z-50 animate-fadeIn">
+                    {user ? (
+                      <>
+                        {/* লগইন করা থাকলে: My Profile এবং Logout */}
+                        <Link
+                          href="/account"
+                          onClick={() => setIsAccountOpen(false)}
+                          className="block px-4 py-2.5 text-sm font-medium text-text-dark hover:bg-gray-50 hover:text-primary transition-colors"
+                        >
+                          My Profile
+                        </Link>
+                        <div className="border-t border-border-color my-1"></div>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors cursor-pointer"
+                        >
+                          Logout
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {/* লগইন করা না থাকলে: শুধু Login */}
+                        <Link
+                          href="/signin"
+                          onClick={() => setIsAccountOpen(false)}
+                          className="block px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors text-center"
+                        >
+                          Login
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* ========================================================== */}
+
             </div>
           </div>
 

@@ -1,12 +1,28 @@
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { apiClient } from "@/services/apiClient";
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { cartItems } = useCartStore();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        await apiClient.get("/auth/users/me/");
+        setIsLoading(false);
+      } catch (error) {
+        router.push("/signin?redirect=/checkout");
+      }
+    };
+    verifyAuth();
+  }, [router]);
 
   const subTotal = cartItems?.reduce((total: number, item: any) => {
     const price = Number(item.product?.unit_price || item.unit_price || 0);
@@ -17,6 +33,14 @@ export default function CheckoutPage() {
     e.preventDefault();
     setIsSubmitted(true);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (isSubmitted) {
     return (
@@ -42,8 +66,6 @@ export default function CheckoutPage() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 py-28 min-h-screen font-sans">
-      
-      {/* Spacer div to keep heading fully visible below the fixed navbar */}
       <div className="h-6"></div>
 
       <div className="mb-8">
