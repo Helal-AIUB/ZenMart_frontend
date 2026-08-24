@@ -1,22 +1,18 @@
-import ReactQueryProvider from '@/providers/ReactQueryProvider';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import CartDrawer from "@/components/CartDrawer";
-import './globals.css';
-import { Toaster } from 'react-hot-toast';
+import "./globals.css";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata = {
+  title: "Petora BD",
+  description: "Premium pet e-commerce platform",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>
-        <Toaster/>
-        <ReactQueryProvider>
-          <Navbar />
-          <CartDrawer />
-          {children}
-          <Footer />
-        </ReactQueryProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

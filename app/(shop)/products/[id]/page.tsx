@@ -16,6 +16,9 @@ export default function ProductDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  
+  // State for image gallery
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const { addToCart } = useCartStore();
   const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlistStore();
@@ -77,7 +80,7 @@ export default function ProductDetailsPage() {
     data: product,
     isLoading: loadingProduct,
     error,
-  } = useQuery<Product>({
+  } = useQuery<Product | any>({
     queryKey: ["product", productId],
     queryFn: () =>
       apiClient.get(`/store/products/${productId}/`).then((res) => res.data),
@@ -103,6 +106,21 @@ export default function ProductDetailsPage() {
   const similarItems = Array.isArray(relatedProducts)
     ? relatedProducts.filter((p: Product) => String(p.id) !== String(productId)).slice(0, 4)
     : [];
+
+  // Handlers for Next/Prev Image Buttons
+  const handleNextImage = () => {
+    if (product?.images && product.images.length > 0) {
+      setActiveImageIndex((prev) => (prev + 1) % product.images.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (product?.images && product.images.length > 0) {
+      setActiveImageIndex((prev) =>
+        prev === 0 ? product.images.length - 1 : prev - 1
+      );
+    }
+  };
 
   if (loadingProduct)
     return (
@@ -156,7 +174,7 @@ export default function ProductDetailsPage() {
             
             <div className="md:col-span-6 flex flex-col gap-4">
               <div className="bg-[#f8f9fa] rounded-[2rem] h-[360px] flex items-center justify-center text-7xl border border-card-border relative overflow-hidden group">
-                <span className="absolute top-4 left-4 bg-badge-red text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm">
+                <span className="absolute top-4 left-4 bg-badge-red text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm z-10">
                   -27% OFF
                 </span>
 
@@ -189,27 +207,72 @@ export default function ProductDetailsPage() {
                   </svg>
                 </button>
 
-                <span className="transform transition-transform duration-700 group-hover:scale-110">
-                  📦
-                </span>
+                {/* Main Product Image */}
+                {product.images && product.images.length > 0 ? (
+                  <img
+                    src={product.images[activeImageIndex].image}
+                    alt={product.title}
+                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110 z-0"
+                  />
+                ) : (
+                  <span className="transform transition-transform duration-700 group-hover:scale-110 z-0">
+                    📦
+                  </span>
+                )}
 
-                <button className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-card-border flex items-center justify-center text-xs shadow-xs hover:bg-primary hover:text-white transition-all cursor-pointer">
-                  ❮
-                </button>
-                <button className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-card-border flex items-center justify-center text-xs shadow-xs hover:bg-primary hover:text-white transition-all cursor-pointer">
-                  ❯
-                </button>
+                {/* Prev & Next Buttons */}
+                {product.images && product.images.length > 1 && (
+                  <>
+                    <button 
+                      onClick={handlePrevImage}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-card-border flex items-center justify-center text-xs shadow-xs hover:bg-primary hover:text-white transition-all cursor-pointer z-20"
+                    >
+                      ❮
+                    </button>
+                    <button 
+                      onClick={handleNextImage}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 border border-card-border flex items-center justify-center text-xs shadow-xs hover:bg-primary hover:text-white transition-all cursor-pointer z-20"
+                    >
+                      ❯
+                    </button>
+                  </>
+                )}
               </div>
 
+              {/* Dynamic Image Thumbnails */}
               <div className="grid grid-cols-4 gap-3">
-                {[1, 2, 3].map((_, i) => (
-                  <div key={i} className="h-20 bg-[#f8f9fa] rounded-2xl border-2 border-primary flex items-center justify-center text-2xl cursor-pointer shadow-2xs">
-                    📦
+                {product.images && product.images.length > 0 ? (
+                  product.images.map((imgObj: any, index: number) => (
+                    <button
+                      key={imgObj.id}
+                      onClick={() => setActiveImageIndex(index)}
+                      className={`h-20 bg-[#f8f9fa] rounded-2xl border-2 overflow-hidden flex items-center justify-center cursor-pointer shadow-2xs transition-all ${
+                        activeImageIndex === index 
+                          ? "border-primary" 
+                          : "border-transparent hover:border-card-border"
+                      }`}
+                    >
+                      <img 
+                        src={imgObj.image} 
+                        alt={`${product.title} Thumbnail`} 
+                        className="w-full h-full object-cover" 
+                      />
+                    </button>
+                  ))
+                ) : (
+                  [1, 2, 3].map((_, i) => (
+                    <div key={i} className="h-20 bg-[#f8f9fa] rounded-2xl border-2 border-transparent opacity-50 flex items-center justify-center text-2xl shadow-2xs">
+                      📦
+                    </div>
+                  ))
+                )}
+                
+                {/* Optional: Show remaining count if more than 3/4 images */}
+                {product.images && product.images.length > 4 && (
+                  <div className="h-20 bg-[#f8f9fa] rounded-2xl border border-dashed border-card-border flex items-center justify-center text-xs font-bold text-muted cursor-pointer hover:border-primary transition-colors">
+                    +{product.images.length - 4}
                   </div>
-                ))}
-                <div className="h-20 bg-[#f8f9fa] rounded-2xl border border-dashed border-card-border flex items-center justify-center text-xs font-bold text-muted cursor-pointer hover:border-primary transition-colors">
-                  +3
-                </div>
+                )}
               </div>
             </div>
 
@@ -291,7 +354,6 @@ export default function ProductDetailsPage() {
 
           </div>
 
-          {/* Similar Products Section (Moved below product details/thumbnails on the left column) */}
           <div className="bg-card rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-card-border p-6 md:p-8">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-card-border">
               <h3 className="text-base font-black text-foreground uppercase tracking-wider">
@@ -328,8 +390,12 @@ export default function ProductDetailsPage() {
                       key={item.id}
                       className="flex flex-col gap-3 p-4 rounded-2xl bg-[#f8f9fa] hover:bg-primary-light/40 border border-card-border transition-all group"
                     >
-                      <div className="w-full h-32 bg-white rounded-xl flex items-center justify-center text-3xl group-hover:scale-105 transition-transform border border-card-border">
-                        📦
+                      <div className="w-full h-32 bg-white rounded-xl flex items-center justify-center text-3xl group-hover:scale-105 transition-transform border border-card-border overflow-hidden">
+                        {item.images && item.images.length > 0 ? (
+                           <img src={item.images[0].image} alt={item.title} className="w-full h-full object-cover" />
+                        ) : (
+                           <span>📦</span>
+                        )}
                       </div>
                       <div className="flex flex-col flex-1 justify-between">
                         <h4 className="text-xs font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">

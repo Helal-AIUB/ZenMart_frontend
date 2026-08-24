@@ -122,7 +122,7 @@ export default function Navbar() {
           <div className="flex justify-between items-center gap-6">
             <Link href="/" className="flex items-center gap-1 shrink-0 group">
               <span className="text-3xl font-black text-primary tracking-tight group-hover:scale-105 transition-transform duration-300">
-                ZenMart
+                Petora BD
               </span>
               <span className="w-2 h-2 rounded-full bg-yellow-400 mt-2 animate-pulse"></span>
             </Link>
