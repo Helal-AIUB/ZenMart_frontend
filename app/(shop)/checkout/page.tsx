@@ -5,12 +5,24 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/services/apiClient";
+import toast from "react-hot-toast";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems } = useCartStore();
+  const { cartItems, cartId, clearCart } = useCartStore(); 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+  // 🟢 Form State for Shipping Address
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    street: "",
+    city: "",
+    zipCode: "",
+    phone: ""
+  });
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -29,9 +41,44 @@ export default function CheckoutPage() {
     return total + (price * item.quantity);
   }, 0) || 0;
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  // 🟢 Submit Function with Address Data
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    
+    const currentCartId = cartId || (typeof window !== 'undefined' ? localStorage.getItem('cart_id') : null);
+
+    if (!currentCartId) {
+      toast.error("Your cart is empty or missing!");
+      return;
+    }
+
+    setIsPlacingOrder(true);
+    try {
+      // 🟢 Sending dynamic address to backend
+      await apiClient.post("/store/orders/", {
+        cart_id: currentCartId,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        street: formData.street,
+        city: formData.city,
+        zip_code: formData.zipCode,
+        phone: formData.phone
+      });
+
+      if (clearCart) clearCart();
+      if (typeof window !== 'undefined') localStorage.removeItem('cart_id');
+      
+      setIsSubmitted(true);
+    } catch (error: any) {
+      console.error("Order error:", error);
+      toast.error(error.response?.data?.detail || "Failed to place order. Please check all fields.");
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   if (isLoading) {
@@ -45,20 +92,22 @@ export default function CheckoutPage() {
   if (isSubmitted) {
     return (
       <main className="max-w-xl mx-auto px-4 py-32 min-h-screen flex items-center justify-center font-sans">
-        <div className="bg-card border border-card-border p-10 rounded-[2.5rem] shadow-xl text-center w-full">
+        <div className="bg-card border border-card-border p-10 rounded-[2.5rem] shadow-xl text-center w-full animate-in fade-in zoom-in duration-300">
           <div className="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center text-3xl mx-auto mb-6 shadow-md">
             ✓
           </div>
           <h1 className="text-2xl font-black text-foreground mb-2">Order Placed Successfully!</h1>
           <p className="text-xs text-muted mb-8">
-            Thank you for shopping with ZenMart. Your order has been successfully placed.
+            Thank you for shopping with Petora BD. Your order has been successfully placed and is being processed.
           </p>
-          <Link
-            href="/products"
-            className="inline-block px-8 py-3.5 rounded-2xl bg-primary text-white font-bold text-xs hover:bg-primary-hover transition-all shadow-md"
+          <button
+            onClick={() => {
+              if (typeof window !== 'undefined') window.location.href = "/products";
+            }}
+            className="inline-block px-8 py-3.5 rounded-2xl bg-primary text-white font-bold text-xs hover:bg-primary-hover transition-all shadow-md cursor-pointer"
           >
             Continue Shopping
-          </Link>
+          </button>
         </div>
       </main>
     );
@@ -70,7 +119,7 @@ export default function CheckoutPage() {
 
       <div className="mb-8">
         <h1 className="text-3xl font-black text-foreground tracking-tight">Checkout</h1>
-        <p className="text-xs text-muted mt-1">Complete your shipping and payment details to place order.</p>
+        <p className="text-xs text-muted mt-1">Complete your shipping and payment details to place your order.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -82,39 +131,44 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-muted">First Name</label>
-              <input required type="text" placeholder="John" className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              <input required type="text" name="firstName" placeholder="Rabbi" value={formData.firstName} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-muted">Last Name</label>
-              <input required type="text" placeholder="Doe" className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              <input required type="text" name="lastName" placeholder="Islam" value={formData.lastName} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-muted">Street Address</label>
-            <input required type="text" placeholder="123 Main Street, Apt 4B" className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+            <input required type="text" name="street" placeholder="House-12, Road-5, Sector-11" value={formData.street} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-muted">City</label>
-              <input required type="text" placeholder="Bhola" className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              <input required type="text" name="city" placeholder="Dhaka" value={formData.city} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-muted">Postal Code</label>
-              <input required type="text" placeholder="10001" className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              <input required type="text" name="zipCode" placeholder="1230" value={formData.zipCode} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-muted">Phone Number</label>
-              <input required type="tel" placeholder="+880 -xxxx-xxxx" className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              <input required type="tel" name="phone" placeholder="+880 17xx-xxxxxx" value={formData.phone} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
             </div>
           </div>
 
           <button
             type="submit"
-            className="mt-4 w-full py-4 rounded-2xl bg-primary text-white font-black text-xs hover:bg-primary-hover transition-all shadow-md cursor-pointer tracking-wide"
+            disabled={isPlacingOrder}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-primary text-white font-black text-xs hover:bg-primary-hover disabled:bg-primary/70 transition-all shadow-md cursor-pointer tracking-wide"
           >
-            Place Order (${Math.round(subTotal)})
+            {isPlacingOrder ? (
+              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Placing Order...</>
+            ) : (
+              `Place Order ($${Math.round(subTotal)})`
+            )}
           </button>
         </form>
 

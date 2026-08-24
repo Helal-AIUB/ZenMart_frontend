@@ -17,7 +17,7 @@ export default function Navbar() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  
+
   // অ্যাকাউন্ট ড্রপডাউন টগল করার জন্য স্টেট
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -60,7 +60,7 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
 
     // বাইরে ক্লিক করলে ড্রপডাউন বন্ধ হয়ে যাওয়ার লজিক
-    const handleOutsideClick = (event:any) => {
+    const handleOutsideClick = (event: any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsAccountOpen(false);
       }
@@ -91,7 +91,7 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    
+
     if (searchQuery.trim()) {
       params.append("search", searchQuery.trim());
     }
@@ -127,12 +127,12 @@ export default function Navbar() {
               <span className="w-2 h-2 rounded-full bg-yellow-400 mt-2 animate-pulse"></span>
             </Link>
 
-            <form 
+            <form
               onSubmit={handleSearch}
               className="hidden lg:flex flex-1 max-w-3xl border border-border-color rounded-full items-center pl-4 pr-1 h-12 bg-gray-50 focus-within:bg-white focus-within:border-primary focus-within:shadow-sm transition-all"
             >
               <div className="relative flex items-center border-r border-border-color pr-3">
-                <select 
+                <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="bg-transparent text-sm font-medium text-text-gray focus:outline-none cursor-pointer appearance-none pr-6"
@@ -166,8 +166,8 @@ export default function Navbar() {
                 placeholder="Search for products, brands and more..."
                 className="flex-1 bg-transparent border-none px-4 text-sm text-text-dark placeholder-text-light focus:outline-none focus:ring-0 h-full w-full"
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary-hover transition-colors shrink-0"
               >
                 <svg
@@ -287,7 +287,10 @@ export default function Navbar() {
               </button>
 
               {/* ================= ACCOUNT DROPDOWN SECTION ================= */}
-              <div className="relative pl-4 border-l border-border-color" ref={dropdownRef}>
+              <div
+                className="relative pl-4 border-l border-border-color"
+                ref={dropdownRef}
+              >
                 <button
                   onClick={() => setIsAccountOpen(!isAccountOpen)}
                   className="flex items-center gap-3 group cursor-pointer focus:outline-none"
@@ -295,8 +298,8 @@ export default function Navbar() {
                   <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden border border-border-color">
                     {user ? (
                       <div className="w-full h-full bg-primary flex items-center justify-center text-white font-bold text-lg">
-                        {user.first_name 
-                          ? user.first_name.charAt(0).toUpperCase() 
+                        {user.first_name
+                          ? user.first_name.charAt(0).toUpperCase()
                           : user.username?.charAt(0).toUpperCase()}
                       </div>
                     ) : (
@@ -346,7 +349,7 @@ export default function Navbar() {
                       <>
                         {/* লগইন করা থাকলে: My Profile এবং Logout */}
                         <Link
-                          href="/account"
+                          href="/profile"
                           onClick={() => setIsAccountOpen(false)}
                           className="block px-4 py-2.5 text-sm font-medium text-text-dark hover:bg-gray-50 hover:text-primary transition-colors"
                         >
@@ -376,13 +379,14 @@ export default function Navbar() {
                 )}
               </div>
               {/* ========================================================== */}
-
             </div>
           </div>
 
           <div
             className={`hidden lg:flex items-center gap-8 text-sm transition-all duration-300 ${
-              isScrolled ? "h-0 opacity-0 overflow-hidden mt-0" : "h-10 opacity-100 mt-1"
+              isScrolled
+                ? "h-0 opacity-0 overflow-hidden mt-0"
+                : "h-10 opacity-100 mt-1"
             }`}
           >
             <button className="bg-primary text-white px-5 py-2.5 rounded-md font-semibold flex items-center gap-2 hover:bg-primary-hover transition-colors whitespace-nowrap shrink-0">
