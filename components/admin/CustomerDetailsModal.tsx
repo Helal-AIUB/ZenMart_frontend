@@ -58,9 +58,15 @@ export default function CustomerDetailsModal({ isOpen, onClose, customer, onUpda
     e.preventDefault();
     setIsUpdating(true);
     try {
-      const res = await apiClient.patch(`/store/customers/${customer.id}/`, {
-        membership, phone, dob
-      });
+      // 🟢 400 Bad Request Fix: Handle Empty DOB correctly
+      const payload: any = { membership, phone };
+      if (dob) {
+        payload.dob = dob;
+      } else {
+        payload.dob = null; // Django expects null, not an empty string ""
+      }
+
+      const res = await apiClient.patch(`/store/customers/${customer.id}/`, payload);
       onUpdate({ ...customer, membership, phone, dob });
       toast.success("Customer details updated successfully!");
       onClose();

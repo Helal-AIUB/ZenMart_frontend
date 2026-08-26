@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-// useRouter ইম্পোর্ট করার দরকার নেই যেহেতু আমরা window.location ব্যবহার করছি
 import Link from "next/link";
-import { publicClient } from "@/services/apiClient";
+import { publicClient, apiClient } from "@/services/apiClient"; // 🟢 দুটোই ইম্পোর্ট করুন
 
 export default function SignInPage() {
   const [formData, setFormData] = useState({
@@ -27,19 +26,25 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      // ১. লগইন রিকোয়েস্ট (টোকেন কুকিতে সেভ হবে)
+      // ১. লগইন রিকোয়েস্ট
       const response = await publicClient.post("/auth/jwt/create/", {
         username: formData.username,
         password: formData.password,
       });
 
       if (response.status === 200) {
+        // 🟢 Header Auth-এর জন্য LocalStorage-এ টোকেন সেভ
+        if (response.data.access) {
+          localStorage.setItem("access", response.data.access);
+          localStorage.setItem("refresh", response.data.refresh);
+        }
+
         try {
-          // ২. ইউজারের তথ্য ফেচ করে চেক করা সে অ্যাডমিন কি না
-          const userRes = await publicClient.get("/auth/users/me/");
+          // ২. ইউজারের তথ্য ফেচ করা (apiClient ব্যবহার করে)
+          const userRes = await apiClient.get("/auth/users/me/");
           const user = userRes.data;
 
-          // ৩. রোল অনুযায়ী রিডাইরেক্ট করা
+          // ৩. রোল অনুযায়ী রিডাইরেক্ট করা
           if (user.is_staff || user.is_superuser) {
             window.location.href = "/admin";
           } else {
@@ -47,7 +52,6 @@ export default function SignInPage() {
           }
         } catch (profileErr) {
           console.error("Failed to fetch user profile:", profileErr);
-          // প্রোফাইল ফেচ করতে না পারলে ডিফল্টভাবে হোমপেজে যাবে
           window.location.href = "/";
         }
       }
@@ -55,7 +59,7 @@ export default function SignInPage() {
       console.error("Login failed:", err);
       setError(
         err.response?.data?.detail ||
-          "Invalid username or password. Please try again.",
+          "Invalid username or password. Please try again."
       );
     } finally {
       setLoading(false);
@@ -66,15 +70,10 @@ export default function SignInPage() {
     <div className="auth-container">
       <div className="auth-card">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-text-dark mb-1">
-            Welcome Back
-          </h2>
-          <p className="text-sm text-text-gray">
-            Sign in to your PetoraBD account
-          </p>
+          <h2 className="text-2xl font-bold text-text-dark mb-1">Welcome Back</h2>
+          <p className="text-sm text-text-gray">Sign in to your PetoraBD account</p>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="bg-badge-red/10 border border-badge-red text-badge-red px-3 py-2 rounded-lg text-sm text-center mb-5">
             {error}
@@ -83,43 +82,16 @@ export default function SignInPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="form-label" htmlFor="username">
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              className="form-input"
-              placeholder="admin"
-              value={formData.username}
-              onChange={handleChange}
-            />
+            <label className="form-label" htmlFor="username">Username</label>
+            <input id="username" name="username" type="text" required className="form-input" placeholder="admin" value={formData.username} onChange={handleChange} />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="form-label !mb-0" htmlFor="password">
-                Password
-              </label>
-              <Link
-                href="#"
-                className="text-xs font-medium text-primary hover:text-primary-hover"
-              >
-                Forgot password?
-              </Link>
+              <label className="form-label !mb-0" htmlFor="password">Password</label>
+              <Link href="#" className="text-xs font-medium text-primary hover:text-primary-hover">Forgot password?</Link>
             </div>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="form-input"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-            />
+            <input id="password" name="password" type="password" required className="form-input" placeholder="••••••••" value={formData.password} onChange={handleChange} />
           </div>
 
           <div className="pt-3">
@@ -131,12 +103,7 @@ export default function SignInPage() {
 
         <p className="text-center text-sm text-text-gray mt-6">
           Don't have an account?{" "}
-          <Link
-            href="/signup"
-            className="font-semibold text-primary hover:text-primary-hover transition-colors"
-          >
-            Sign Up
-          </Link>
+          <Link href="/signup" className="font-semibold text-primary hover:text-primary-hover transition-colors">Sign Up</Link>
         </p>
       </div>
     </div>

@@ -39,13 +39,13 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      // শুধু publicClient ব্যবহার করুন, এক্সট্রা কোনো হেডার দেওয়ার দরকার নেই
       const response = await publicClient.post("/auth/users/", {
         username: formData.username,
         email: formData.email,
         first_name: formData.first_name,
         last_name: formData.last_name,
         password: formData.password,
+        re_password: formData.re_password, // 🟢 এটি যুক্ত করে দিন
       });
 
       if (response.status === 201) {

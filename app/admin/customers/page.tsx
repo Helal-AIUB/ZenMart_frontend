@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { apiClient } from "@/services/apiClient";
-import { Search, Loader2, AlertCircle, Eye, Trash2, Users, Award, ChevronLeft, ChevronRight, Mail, Phone } from "lucide-react";
+import { Search, Loader2, AlertCircle, Eye, Trash2, Users, Award, ChevronLeft, ChevronRight, Mail, Phone, UserPlus } from "lucide-react";
 import toast from "react-hot-toast";
 import CustomerDetailsModal from "@/components/admin/CustomerDetailsModal";
+import CreateCustomerModal from "@/components/admin/CreateCustomerModal"; // 🟢 New Import
 
 // --- Types ---
 interface Customer {
@@ -33,6 +34,7 @@ export default function AdminCustomersPage() {
 
   // Modal States
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false); // 🟢 New State
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   const fetchCustomers = async () => {
@@ -48,7 +50,6 @@ export default function AdminCustomersPage() {
   };
 
   useEffect(() => {
-    fetchCustomers(); // Wait, let's call fetchCustomers
     fetchCustomers();
   }, []);
 
@@ -109,12 +110,18 @@ export default function AdminCustomersPage() {
   return (
     <div className="space-y-6 pb-10 font-sans">
       
-      {/* Header */}
-      <div className="flex flex-col justify-between items-start gap-4">
+      {/* 🟢 Header Update with Add Button */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Customer Management</h1>
           <p className="text-sm text-slate-500 mt-1">Manage users, view profiles, and upgrade memberships</p>
         </div>
+        <button 
+          onClick={() => setIsCreateOpen(true)}
+          className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+        >
+          <UserPlus size={18} /> Add Customer
+        </button>
       </div>
 
       {/* Top Stats Cards */}
@@ -177,7 +184,7 @@ export default function AdminCustomersPage() {
                 <tr><td colSpan={5} className="px-6 py-16 text-center text-slate-400"><AlertCircle size={32} className="mx-auto mb-3 text-slate-300" /> No customers found.</td></tr>
               ) : (
                 currentDisplayedCustomers.map((customer) => {
-                  const name = customer.user?.first_name ? `${customer.user.first_name} ${customer.user.last_name || ''}` : "Unknown User";
+                  const name = customer.user?.first_name ? `${customer.user.first_name} ${customer.user.last_name || ''}` : customer.user?.username || `Unknown User`;
                   
                   return (
                     <tr key={customer.id} className="hover:bg-slate-50/80 transition-colors group">
@@ -202,13 +209,13 @@ export default function AdminCustomersPage() {
                         <div className="flex items-center justify-end gap-2">
                           <button 
                             onClick={() => { setSelectedCustomer(customer); setIsDetailsOpen(true); }} 
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition-colors border border-emerald-200"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition-colors border border-emerald-200 cursor-pointer"
                           >
                             <Eye size={14} /> View
                           </button>
                           <button 
                             onClick={() => handleDelete(customer.id)} 
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                           >
                             <Trash2 size={18} />
                           </button>
@@ -238,6 +245,13 @@ export default function AdminCustomersPage() {
         onClose={() => setIsDetailsOpen(false)} 
         customer={selectedCustomer} 
         onUpdate={handleCustomerUpdated} 
+      />
+
+      {/* 🟢 Create Customer Modal */}
+      <CreateCustomerModal 
+        isOpen={isCreateOpen} 
+        onClose={() => setIsCreateOpen(false)} 
+        onSuccess={fetchCustomers} 
       />
     </div>
   );

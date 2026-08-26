@@ -7,8 +7,8 @@ import { Toaster } from 'react-hot-toast';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <>
+      <div>
         <Toaster/>
         <ReactQueryProvider>
           <Navbar />
@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <Footer />
         </ReactQueryProvider>
-      </body>
-    </html>
+      </div>
+    </>
   );
 }
