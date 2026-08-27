@@ -44,17 +44,14 @@ export default function AdminDashboard() {
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     // 1. Fetch Dashboard Stats
     const fetchStats = async () => {
       try {
-        const res = await fetch("http://localhost:8000/store/dashboard-stats/", {
-          credentials: "include", 
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-        }
+        const res = await apiClient.get("/store/dashboard-stats/");
+        
+        setStats(res.data);
+        
       } catch (error) {
         console.error("Failed to fetch dashboard stats", error);
       } finally {
