@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { apiClient } from "@/services/apiClient";
 import { 
   X, Loader2, Package, CheckCircle, XCircle, Clock, 
-  MapPin, Truck, ShieldAlert, CheckCircle2, User, Phone 
+  MapPin, Truck, ShieldAlert, CheckCircle2, User, Phone,
+  Plus, Minus, Trash2
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -40,20 +41,24 @@ interface OrderDetailsModalProps {
 
 export default function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: OrderDetailsModalProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<'P' | 'C' | 'F'>('P');
   const [deliveryStatus, setDeliveryStatus] = useState<string>('Placed');
+  const [localItems, setLocalItems] = useState<OrderItem[]>([]);
 
   useEffect(() => {
     if (order) {
       setPaymentStatus(order.payment_status);
       setDeliveryStatus(order.delivery_status || 'Placed');
+      setLocalItems(order.items || []);
     }
   }, [order]);
 
   if (!isOpen || !order) return null;
 
-  const totalAmount = order.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const totalAmount = localItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
 
+  // --- Update Order Status ---
   const handleStatusUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
@@ -66,7 +71,8 @@ export default function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: 
       onUpdate({ 
         ...order, 
         payment_status: paymentStatus, 
-        delivery_status: deliveryStatus as Order['delivery_status'] 
+        delivery_status: deliveryStatus as Order['delivery_status'],
+        items: localItems 
       });
       
       toast.success("Order statuses updated successfully!");
@@ -76,6 +82,56 @@ export default function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: 
       toast.error("Failed to update order status.");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  // --- Update Item Quantity ---
+  const handleQuantityChange = async (itemId: number, currentQty: number, change: number) => {
+    const newQty = currentQty + change;
+    if (newQty < 1) return; // Prevent quantity less than 1
+
+    setUpdatingItemId(itemId);
+    try {
+      // Assuming DRF nested router: /store/orders/{order_pk}/items/{id}/
+      await apiClient.patch(`/store/orders/${order.id}/items/${itemId}/`, {
+        quantity: newQty
+      });
+
+      const updatedItems = localItems.map(item => 
+        item.id === itemId ? { ...item, quantity: newQty } : item
+      );
+      setLocalItems(updatedItems);
+      
+      // Update parent in real-time to reflect new total amount
+      onUpdate({ ...order, items: updatedItems });
+      toast.success("Quantity updated!");
+    } catch (error) {
+      console.error("Failed to update quantity:", error);
+      toast.error("Failed to update item quantity.");
+    } finally {
+      setUpdatingItemId(null);
+    }
+  };
+
+  // --- Delete Item ---
+  const handleDeleteItem = async (itemId: number) => {
+    if (!window.confirm("Are you sure you want to remove this item from the order?")) return;
+    
+    setUpdatingItemId(itemId);
+    try {
+      await apiClient.delete(`/store/orders/${order.id}/items/${itemId}/`);
+      
+      const filteredItems = localItems.filter(item => item.id !== itemId);
+      setLocalItems(filteredItems);
+      
+      // Update parent in real-time
+      onUpdate({ ...order, items: filteredItems });
+      toast.success("Item removed from order!");
+    } catch (error) {
+      console.error("Failed to delete item:", error);
+      toast.error("Failed to remove item.");
+    } finally {
+      setUpdatingItemId(null);
     }
   };
 
@@ -162,30 +218,67 @@ export default function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: 
 
           {/* Items Table */}
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50">
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Order Items ({order.items.length})</h3>
+            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Order Items ({localItems.length})</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
-                <thead className="text-slate-500">
+                <thead className="text-slate-500 bg-white">
                   <tr>
                     <th className="px-5 py-3 font-semibold border-b border-slate-100">Product</th>
                     <th className="px-5 py-3 font-semibold text-center border-b border-slate-100">Unit Price</th>
                     <th className="px-5 py-3 font-semibold text-center border-b border-slate-100">Qty</th>
                     <th className="px-5 py-3 font-semibold text-right border-b border-slate-100">Subtotal</th>
+                    <th className="px-5 py-3 font-semibold text-center border-b border-slate-100">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {order.items.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-5 py-4 font-medium text-slate-800">{item.product.title}</td>
-                      <td className="px-5 py-4 text-slate-600 text-center">${item.unit_price}</td>
-                      <td className="px-5 py-4 text-slate-600 text-center">
-                        <span className="bg-slate-100 px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600">x{item.quantity}</span>
+                  {localItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-5 py-8 text-center text-slate-400">
+                        No items remaining in this order.
                       </td>
-                      <td className="px-5 py-4 font-bold text-slate-800 text-right">${(item.unit_price * item.quantity).toFixed(2)}</td>
                     </tr>
-                  ))}
+                  ) : (
+                    localItems.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-5 py-4 font-medium text-slate-800">{item.product.title}</td>
+                        <td className="px-5 py-4 text-slate-600 text-center">${item.unit_price}</td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center justify-center gap-3">
+                            <button 
+                              onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
+                              disabled={item.quantity <= 1 || updatingItemId === item.id}
+                              className="w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md disabled:opacity-50 transition-colors"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="w-6 text-center font-bold text-slate-800">
+                              {updatingItemId === item.id ? <Loader2 size={14} className="animate-spin mx-auto text-emerald-500" /> : item.quantity}
+                            </span>
+                            <button 
+                              onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
+                              disabled={updatingItemId === item.id}
+                              className="w-7 h-7 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md disabled:opacity-50 transition-colors"
+                            >
+                              <Plus size={14} />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 font-bold text-slate-800 text-right">${(item.unit_price * item.quantity).toFixed(2)}</td>
+                        <td className="px-5 py-4 text-center">
+                          <button 
+                            onClick={() => handleDeleteItem(item.id)}
+                            disabled={updatingItemId === item.id}
+                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50"
+                            title="Remove Item"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
