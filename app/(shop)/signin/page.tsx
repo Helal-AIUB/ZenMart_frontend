@@ -32,15 +32,19 @@ const handleSubmit = async (e: React.FormEvent) => {
       });
 
       if (response.status === 200) {
+        console.log("Backend Response:", response.data); 
+
         const access = response.data?.access;
         const refresh = response.data?.refresh;
 
-        if (access) {
-          localStorage.setItem("access", access);
+        if (!access) {
+          setError("Login successful, but Backend did not send the Token in JSON! Check backend code.");
+          setLoading(false);
+          return; 
         }
-        if (refresh) {
-          localStorage.setItem("refresh", refresh);
-        }
+
+        localStorage.setItem("access", access);
+        if (refresh) localStorage.setItem("refresh", refresh);
 
         try {
           const userRes = await apiClient.get("/auth/users/me/");
@@ -53,7 +57,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           }
         } catch (profileErr) {
           console.error("Failed to fetch user profile:", profileErr);
-          window.location.href = "/";
+          setError("Failed to verify user profile.");
         }
       }
     } catch (err: any) {
