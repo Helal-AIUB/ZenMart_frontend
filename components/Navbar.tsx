@@ -71,14 +71,17 @@ export default function Navbar() {
     };
   }, [cartId, fetchCart]);
 
-  const handleLogout = () => {
+const handleLogout = () => {
+  if (typeof window !== "undefined") {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     
     document.cookie = "access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
     window.location.href = "/signin";
-  };
+  }
+};
   // const handleLogout = async () => {
   //   try {
   //     await apiClient.post("/auth/token/logout/").catch(() => {});

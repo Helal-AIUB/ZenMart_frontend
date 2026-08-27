@@ -20,31 +20,32 @@ export default function SignInPage() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      // ১. লগইন রিকোয়েস্ট
       const response = await publicClient.post("/auth/jwt/create/", {
         username: formData.username,
         password: formData.password,
       });
 
       if (response.status === 200) {
-        // 🟢 Header Auth-এর জন্য LocalStorage-এ টোকেন সেভ
-        if (response.data.access) {
-          localStorage.setItem("access", response.data.access);
-          localStorage.setItem("refresh", response.data.refresh);
+        const access = response.data?.access;
+        const refresh = response.data?.refresh;
+
+        if (access) {
+          localStorage.setItem("access", access);
+        }
+        if (refresh) {
+          localStorage.setItem("refresh", refresh);
         }
 
         try {
-          // ২. ইউজারের তথ্য ফেচ করা (apiClient ব্যবহার করে)
           const userRes = await apiClient.get("/auth/users/me/");
           const user = userRes.data;
 
-          // ৩. রোল অনুযায়ী রিডাইরেক্ট করা
           if (user.is_staff || user.is_superuser) {
             window.location.href = "/admin";
           } else {

@@ -28,14 +28,12 @@
 //   },
 // });
 
-
 import axios from "axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const publicClient = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
@@ -43,7 +41,6 @@ export const publicClient = axios.create({
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, 
   headers: {
     "Content-Type": "application/json",
   },
@@ -62,7 +59,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Auto Logout if Unauthorized
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -72,7 +68,7 @@ apiClient.interceptors.response.use(
       if (hasAuthHeader && typeof window !== "undefined") {
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");
-        window.location.href = "/signin";
+        window.location.href = "/signin"; 
       }
     }
     return Promise.reject(error);
