@@ -46,12 +46,15 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
   }, []);
 
   const handleLogout = () => {
-    if (typeof window !== "undefined") {
-       localStorage.removeItem("access"); // Token remove (আপনার সিস্টেম অনুযায়ী)
-       localStorage.removeItem("refresh");
-    }
-    toast.success("Logged out successfully");
-    router.push("/signin");
+    // ১. LocalStorage থেকে টোকেন মুছে ফেলা
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    
+    // ২. কুকি থাকলে সেটিও রিমুভ করার জন্য (অপশনাল)
+    document.cookie = "access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+    // ৩. সাইন-ইন পেজে রিডাইরেক্ট করা
+    window.location.href = "/signin";
   };
 
   // 🟢 Dynamic Values

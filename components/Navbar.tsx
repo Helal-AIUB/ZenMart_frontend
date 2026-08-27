@@ -18,7 +18,6 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  // অ্যাকাউন্ট ড্রপডাউন টগল করার জন্য স্টেট
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +58,6 @@ export default function Navbar() {
     };
     window.addEventListener("scroll", handleScroll);
 
-    // বাইরে ক্লিক করলে ড্রপডাউন বন্ধ হয়ে যাওয়ার লজিক
     const handleOutsideClick = (event: any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsAccountOpen(false);
@@ -73,20 +71,25 @@ export default function Navbar() {
     };
   }, [cartId, fetchCart]);
 
-  // পারফেক্ট লগআউট হ্যান্ডলার
-  const handleLogout = async () => {
-    try {
-      // ব্যাকএন্ডে টোকেন বা সেশন ক্লিয়ার করার রিকোয়েস্ট (যদি প্রয়োজন হয়)
-      // HttpOnly cookie হলে ব্যাকএন্ড কুকি ক্লিয়ার করবে, সাথে লোকাল ডাটাও রিফেচ বা ক্লিন করতে পারেন
-      await apiClient.post("/auth/token/logout/").catch(() => {});
-    } catch (error) {
-      console.error("Logout error", error);
-    } finally {
-      setIsAccountOpen(false);
-      refetchUser(); // ইউজার স্টেট রিফেচ করে আনলগইন করে দেওয়া
-      router.push("/signin");
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    
+    document.cookie = "access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+    window.location.href = "/signin";
   };
+  // const handleLogout = async () => {
+  //   try {
+  //     await apiClient.post("/auth/token/logout/").catch(() => {});
+  //   } catch (error) {
+  //     console.error("Logout error", error);
+  //   } finally {
+  //     setIsAccountOpen(false);
+  //     refetchUser();
+  //     router.push("/signin");
+  //   }
+  // };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
