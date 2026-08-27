@@ -23,6 +23,7 @@ interface Order {
   delivery_status: 'Placed' | 'Processing' | 'Shipped' | 'Delivered' | 'Canceled';
   first_name?: string;
   phone?: string;
+  delivery_charge?: string | number;
   items: OrderItem[];
 }
 
@@ -175,7 +176,8 @@ export default function AdminOrdersPage() {
                 <tr><td colSpan={6} className="px-6 py-16 text-center text-slate-400"><AlertCircle size={32} className="mx-auto mb-3 text-slate-300" /> No orders match your filters.</td></tr>
               ) : (
                 currentDisplayedOrders.map((order) => {
-                  const total = order.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+                  // const total = order.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+                  const total = order.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0) + Number(order.delivery_charge || 0);
                   return (
                     <tr key={order.id} className="hover:bg-slate-50/80 transition-colors group">
                       <td className="px-6 py-4 font-extrabold text-slate-700">#{order.id.toString().padStart(4, '0')}</td>

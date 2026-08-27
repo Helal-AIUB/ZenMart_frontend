@@ -2,7 +2,6 @@
 
 import { useCartStore } from "@/store/useCartStore";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/services/apiClient";
 import toast from "react-hot-toast";
@@ -14,34 +13,63 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  // 🟢 Form State for Shipping Address
+  // 🟢 Settings State for Dynamic Shipping Cost
+  const [settings, setSettings] = useState<any>(null);
+
+  // Form State for Shipping Address
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     street: "",
-    city: "",
+    city: "", // Will be selected from Dropdown
     zipCode: "",
     phone: ""
   });
 
   useEffect(() => {
-    const verifyAuth = async () => {
+    const fetchCheckoutData = async () => {
+      // ১. 🟢 ইউজার অথেন্টিকেশন চেক (আলাদা try-catch)
       try {
         await apiClient.get("/auth/users/me/");
-        setIsLoading(false);
       } catch (error) {
+        // লগ-ইন করা না থাকলে রিডাইরেক্ট করবে এবং ফাংশন থামিয়ে দেবে
         router.push("/signin?redirect=/checkout");
+        return; 
+      }
+
+      // ২. 🟢 ডায়নামিক সেটিংস ফেচ করা (আলাদা try-catch)
+      try {
+        const settingsRes = await apiClient.get("/store/settings/");
+        setSettings(settingsRes.data);
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+        toast.error("Warning: Delivery charges could not be loaded.");
+      } finally {
+        // সেটিংস ফেচ হোক বা না হোক, লোডিং বন্ধ করে পেজ দেখাবে
+        setIsLoading(false); 
       }
     };
-    verifyAuth();
+    
+    fetchCheckoutData();
   }, [router]);
 
+  // 🟢 Real-time Calculations
   const subTotal = cartItems?.reduce((total: number, item: any) => {
     const price = Number(item.product?.unit_price || item.unit_price || 0);
     return total + (price * item.quantity);
   }, 0) || 0;
 
-  // 🟢 Submit Function with Address Data
+  const hasSelectedCity = formData.city !== "";
+  const isInsideDhaka = formData.city === "Dhaka";
+  
+  // ক্যালকুলেট শিপিং চার্জ
+  const shippingCost = settings && hasSelectedCity
+    ? (isInsideDhaka ? Number(settings.delivery_charge_inside) : Number(settings.delivery_charge_outside))
+    : 0;
+    
+  const grandTotal = subTotal + shippingCost;
+
+  // Submit Function with Address Data
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -52,9 +80,14 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!formData.city) {
+      toast.error("Please select a delivery zone!");
+      return;
+    }
+
     setIsPlacingOrder(true);
     try {
-      // 🟢 Sending dynamic address to backend
+      // 🟢 Sending dynamic address and shipping cost to backend
       await apiClient.post("/store/orders/", {
         cart_id: currentCartId,
         first_name: formData.firstName,
@@ -62,7 +95,8 @@ export default function CheckoutPage() {
         street: formData.street,
         city: formData.city,
         zip_code: formData.zipCode,
-        phone: formData.phone
+        phone: formData.phone,
+        delivery_charge: shippingCost // 🟢 Added delivery charge to order
       });
 
       if (clearCart) clearCart();
@@ -77,7 +111,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -145,10 +179,23 @@ export default function CheckoutPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            
+            {/* 🟢 City / Zone Select Dropdown */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-muted">City</label>
-              <input required type="text" name="city" placeholder="Dhaka" value={formData.city} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              <label className="text-xs font-bold text-muted">City / Zone</label>
+              <select 
+                required 
+                name="city" 
+                value={formData.city} 
+                onChange={handleInputChange} 
+                className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+              >
+                <option value="" disabled>Select Delivery Zone</option>
+                <option value="Dhaka">Inside Dhaka</option>
+                <option value="Outside Dhaka">Outside Dhaka</option>
+              </select>
             </div>
+
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-bold text-muted">Postal Code</label>
               <input required type="text" name="zipCode" placeholder="1230" value={formData.zipCode} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
@@ -161,19 +208,20 @@ export default function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={isPlacingOrder}
+            disabled={isPlacingOrder || !formData.city}
             className="mt-4 w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-primary text-white font-black text-xs hover:bg-primary-hover disabled:bg-primary/70 transition-all shadow-md cursor-pointer tracking-wide"
           >
             {isPlacingOrder ? (
               <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Placing Order...</>
             ) : (
-              `Place Order ($${Math.round(subTotal)})`
+              /* 🟢 Updated Button text with Grand Total */
+              `Place Order ($${Math.round(grandTotal)})` 
             )}
           </button>
         </form>
 
         <div className="lg:col-span-5 flex flex-col gap-6">
-          <div className="bg-card border border-card-border rounded-[2.5rem] p-8 shadow-sm">
+          <div className="bg-card border border-card-border rounded-[2.5rem] p-8 shadow-sm sticky top-32">
             <h2 className="text-base font-black text-foreground uppercase tracking-wider pb-3 border-b border-card-border mb-4">
               Order Summary
             </h2>
@@ -196,13 +244,19 @@ export default function CheckoutPage() {
                 <span>Subtotal</span>
                 <span className="font-bold text-foreground">${Math.round(subTotal)}</span>
               </div>
-              <div className="flex justify-between text-muted">
+              
+              {/* 🟢 Dynamic Shipping Cost UI */}
+              <div className="flex justify-between text-muted transition-all duration-300">
                 <span>Shipping</span>
-                <span className="font-bold text-emerald-600">Free</span>
+                <span className="font-bold text-emerald-600">
+                  {settings ? (formData.city ? `+$${shippingCost}` : 'Select Zone') : 'Calculating...'}
+                </span>
               </div>
-              <div className="flex justify-between text-sm font-black text-foreground pt-3 border-t border-card-border mt-2">
+              
+              {/* 🟢 Dynamic Grand Total */}
+              <div className="flex justify-between text-sm font-black text-foreground pt-3 border-t border-card-border mt-2 transition-all duration-300">
                 <span>Total Amount</span>
-                <span className="text-primary">${Math.round(subTotal)}</span>
+                <span className="text-primary">${Math.round(grandTotal)}</span>
               </div>
             </div>
           </div>

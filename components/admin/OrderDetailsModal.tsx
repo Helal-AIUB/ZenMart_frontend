@@ -29,6 +29,7 @@ interface Order {
   city?: string;
   zip_code?: string;
   phone?: string;
+  delivery_charge?: string | number;
   items: OrderItem[];
 }
 
@@ -56,7 +57,10 @@ export default function OrderDetailsModal({ isOpen, onClose, order, onUpdate }: 
 
   if (!isOpen || !order) return null;
 
-  const totalAmount = localItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  // const totalAmount = localItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const itemsTotal = localItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const deliveryCharge = Number(order.delivery_charge || 0);
+  const totalAmount = itemsTotal + deliveryCharge;
 
   // --- Update Order Status ---
   const handleStatusUpdate = async (e: React.FormEvent) => {
