@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",
+    "@tiptap/react": "^3.30.5",
+    "@tiptap/starter-kit": "^3.30.5",
     "axios": "^1.19.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.43.0",
