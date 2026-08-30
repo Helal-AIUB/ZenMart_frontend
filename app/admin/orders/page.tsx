@@ -24,6 +24,8 @@ interface Order {
   first_name?: string;
   phone?: string;
   delivery_charge?: string | number;
+  payment_method?: string; // 🟢 Added
+  transaction_id?: string; // 🟢 Added
   items: OrderItem[];
 }
 
@@ -60,16 +62,13 @@ export default function AdminOrdersPage() {
     fetchOrders();
   }, []);
 
-  // 2. Real-time Smart Filtering (Monthly Filter Fixed 🟢)
   const filteredOrders = useMemo(() => {
     return allOrders.filter(order => {
       const matchId = filterId ? order.id.toString().includes(filterId) : true;
       const matchStatus = filterStatus ? order.payment_status === filterStatus : true;
       
-      // Safe String Manipulation for Timezone-free date handling
-      // Extract "YYYY-MM-DD" from "2026-08-24T11:12:46Z"
       const orderDateStr = order.placed_at.split('T')[0];
-      const orderMonthStr = orderDateStr.substring(0, 7); // Output: "YYYY-MM"
+      const orderMonthStr = orderDateStr.substring(0, 7); 
 
       const matchDate = filterDate ? orderDateStr === filterDate : true;
       const matchMonth = filterMonth ? orderMonthStr === filterMonth : true;
@@ -112,8 +111,6 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="space-y-6 pb-10 font-sans">
-      
-      {/* Header with Add Order Button 🟢 */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Order Management</h1>
@@ -127,7 +124,6 @@ export default function AdminOrdersPage() {
         </button>
       </div>
 
-      {/* Advanced Premium Toolbar / Filters */}
       <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col lg:flex-row items-center gap-4">
         <div className="relative w-full lg:w-1/4">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -148,14 +144,12 @@ export default function AdminOrdersPage() {
           <input type="date" value={filterDate} onChange={(e) => { setFilterDate(e.target.value); setFilterMonth(""); }} className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all text-slate-700 cursor-pointer" title="Filter by Specific Date"/>
         </div>
 
-        {/* 🟢 Fixed Monthly Picker */}
         <div className="relative w-full lg:w-1/4">
           <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input type="month" value={filterMonth} onChange={(e) => { setFilterMonth(e.target.value); setFilterDate(""); }} className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all text-slate-700 cursor-pointer" title="Filter by Specific Month"/>
         </div>
       </div>
 
-      {/* Data Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
@@ -176,7 +170,6 @@ export default function AdminOrdersPage() {
                 <tr><td colSpan={6} className="px-6 py-16 text-center text-slate-400"><AlertCircle size={32} className="mx-auto mb-3 text-slate-300" /> No orders match your filters.</td></tr>
               ) : (
                 currentDisplayedOrders.map((order) => {
-                  // const total = order.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
                   const total = order.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0) + Number(order.delivery_charge || 0);
                   return (
                     <tr key={order.id} className="hover:bg-slate-50/80 transition-colors group">
@@ -201,8 +194,6 @@ export default function AdminOrdersPage() {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
         {!loading && totalPages > 1 && (
           <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-center gap-6 bg-slate-50/50">
             <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border border-slate-200 rounded-lg hover:bg-white disabled:opacity-40 text-slate-600 transition-all shadow-sm"><ChevronLeft size={18} /></button>
@@ -212,20 +203,8 @@ export default function AdminOrdersPage() {
         )}
       </div>
 
-      {/* Details/Edit Modal */}
-      <OrderDetailsModal 
-        isOpen={isDetailsOpen} 
-        onClose={() => setIsDetailsOpen(false)} 
-        order={selectedOrder} 
-        onUpdate={handleOrderUpdated} 
-      />
-
-      {/* 🟢 Create New Order Modal */}
-      <CreateOrderModal 
-        isOpen={isCreateOpen} 
-        onClose={() => setIsCreateOpen(false)} 
-        onSuccess={fetchOrders} // Refresh list after creation
-      />
+      <OrderDetailsModal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} order={selectedOrder} onUpdate={handleOrderUpdated} />
+      <CreateOrderModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSuccess={fetchOrders} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/services/apiClient";
 import toast from "react-hot-toast";
+import { Banknote, CreditCard, Smartphone } from "lucide-react";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -13,31 +14,29 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  // 🟢 Settings State for Dynamic Shipping Cost
+  // 🟢 Settings & Payment State
   const [settings, setSettings] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState("COD"); // Default: Cash on Delivery
 
   // Form State for Shipping Address
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     street: "",
-    city: "", // Will be selected from Dropdown
+    city: "", 
     zipCode: "",
     phone: ""
   });
 
   useEffect(() => {
     const fetchCheckoutData = async () => {
-      // ১. 🟢 ইউজার অথেন্টিকেশন চেক (আলাদা try-catch)
       try {
         await apiClient.get("/auth/users/me/");
       } catch (error) {
-        // লগ-ইন করা না থাকলে রিডাইরেক্ট করবে এবং ফাংশন থামিয়ে দেবে
         router.push("/signin?redirect=/checkout");
         return; 
       }
 
-      // ২. 🟢 ডায়নামিক সেটিংস ফেচ করা (আলাদা try-catch)
       try {
         const settingsRes = await apiClient.get("/store/settings/");
         setSettings(settingsRes.data);
@@ -45,7 +44,6 @@ export default function CheckoutPage() {
         console.error("Failed to load settings:", error);
         toast.error("Warning: Delivery charges could not be loaded.");
       } finally {
-        // সেটিংস ফেচ হোক বা না হোক, লোডিং বন্ধ করে পেজ দেখাবে
         setIsLoading(false); 
       }
     };
@@ -62,14 +60,13 @@ export default function CheckoutPage() {
   const hasSelectedCity = formData.city !== "";
   const isInsideDhaka = formData.city === "Dhaka";
   
-  // ক্যালকুলেট শিপিং চার্জ
   const shippingCost = settings && hasSelectedCity
     ? (isInsideDhaka ? Number(settings.delivery_charge_inside) : Number(settings.delivery_charge_outside))
     : 0;
     
   const grandTotal = subTotal + shippingCost;
 
-  // Submit Function with Address Data
+  // 🟢 Submit Function
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -87,8 +84,8 @@ export default function CheckoutPage() {
 
     setIsPlacingOrder(true);
     try {
-      // 🟢 Sending dynamic address and shipping cost to backend
-      await apiClient.post("/store/orders/", {
+      // 🟢 Payload-এ Payment Method যুক্ত করা হলো
+      const res = await apiClient.post("/store/orders/", {
         cart_id: currentCartId,
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -96,19 +93,25 @@ export default function CheckoutPage() {
         city: formData.city,
         zip_code: formData.zipCode,
         phone: formData.phone,
-        delivery_charge: shippingCost // 🟢 Added delivery charge to order
+        delivery_charge: shippingCost,
+        payment_method: paymentMethod 
       });
 
       if (clearCart) clearCart();
       if (typeof window !== 'undefined') localStorage.removeItem('cart_id');
       
-      setIsSubmitted(true);
+      // 🟢 Redirect Logic Based on Payment Method
+      if (paymentMethod === "COD") {
+        setIsSubmitted(true); // COD হলে আগের মতোই সাকসেস মেসেজ দেখাবে
+      } else {
+        router.push(`/checkout/payment/${res.data.id}`); // bKash/Nagad হলে পেমেন্ট পেজে পাঠাবে
+      }
+
     } catch (error: any) {
       console.error("Order error:", error);
       toast.error(error.response?.data?.detail || "Failed to place order. Please check all fields.");
-    } finally {
-      setIsPlacingOrder(false);
-    }
+      setIsPlacingOrder(false); // Only reset if failed
+    } 
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -132,7 +135,7 @@ export default function CheckoutPage() {
           </div>
           <h1 className="text-2xl font-black text-foreground mb-2">Order Placed Successfully!</h1>
           <p className="text-xs text-muted mb-8">
-            Thank you for shopping with Petora BD. Your order has been successfully placed and is being processed.
+            Thank you for your purchase. Your order has been successfully placed and is being processed.
           </p>
           <button
             onClick={() => {
@@ -157,64 +160,113 @@ export default function CheckoutPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <form onSubmit={handleSubmitOrder} className="lg:col-span-7 bg-card border border-card-border rounded-[2.5rem] p-8 shadow-sm flex flex-col gap-6">
-          <h2 className="text-base font-black text-foreground uppercase tracking-wider pb-3 border-b border-card-border">
-            Shipping Information
-          </h2>
+        <form onSubmit={handleSubmitOrder} className="lg:col-span-7 flex flex-col gap-6">
+          
+          {/* 🟢 Shipping Information Card */}
+          <div className="bg-card border border-card-border rounded-[2.5rem] p-8 shadow-sm flex flex-col gap-6">
+            <h2 className="text-base font-black text-foreground uppercase tracking-wider pb-3 border-b border-card-border">
+              Shipping Information
+            </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-muted">First Name</label>
-              <input required type="text" name="firstName" placeholder="Rabbi" value={formData.firstName} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-muted">First Name</label>
+                <input required type="text" name="firstName" placeholder="Rabbi" value={formData.firstName} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-muted">Last Name</label>
+                <input required type="text" name="lastName" placeholder="Islam" value={formData.lastName} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              </div>
             </div>
+
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-muted">Last Name</label>
-              <input required type="text" name="lastName" placeholder="Islam" value={formData.lastName} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              <label className="text-xs font-bold text-muted">Street Address</label>
+              <input required type="text" name="street" placeholder="House-12, Road-5, Sector-11" value={formData.street} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-muted">City / Zone</label>
+                <select 
+                  required 
+                  name="city" 
+                  value={formData.city} 
+                  onChange={handleInputChange} 
+                  className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>Select Delivery Zone</option>
+                  <option value="Dhaka">Inside Dhaka</option>
+                  <option value="Outside Dhaka">Outside Dhaka</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-muted">Postal Code</label>
+                <input required type="text" name="zipCode" placeholder="1230" value={formData.zipCode} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-muted">Phone Number</label>
+                <input required type="tel" name="phone" placeholder="+880 17xx-xxxxxx" value={formData.phone} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-muted">Street Address</label>
-            <input required type="text" name="street" placeholder="House-12, Road-5, Sector-11" value={formData.street} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            
-            {/* 🟢 City / Zone Select Dropdown */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-muted">City / Zone</label>
-              <select 
-                required 
-                name="city" 
-                value={formData.city} 
-                onChange={handleInputChange} 
-                className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+          {/* 🟢 Premium Payment Method Section */}
+          <div className="bg-card border border-card-border rounded-[2.5rem] p-8 shadow-sm flex flex-col gap-4">
+            <h2 className="text-base font-black text-foreground uppercase tracking-wider pb-3 border-b border-card-border">
+              Payment Method
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+              
+              <button 
+                type="button" 
+                onClick={() => setPaymentMethod('COD')} 
+                className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all cursor-pointer ${
+                  paymentMethod === 'COD' 
+                  ? 'border-primary bg-primary/5 text-primary shadow-sm scale-[1.02]' 
+                  : 'border-card-border bg-background text-muted hover:border-primary/40'
+                }`}
               >
-                <option value="" disabled>Select Delivery Zone</option>
-                <option value="Dhaka">Inside Dhaka</option>
-                <option value="Outside Dhaka">Outside Dhaka</option>
-              </select>
-            </div>
+                <Banknote size={26} className="mb-2" />
+                <span className="text-xs font-bold">Cash on Delivery</span>
+              </button>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-muted">Postal Code</label>
-              <input required type="text" name="zipCode" placeholder="1230" value={formData.zipCode} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-muted">Phone Number</label>
-              <input required type="tel" name="phone" placeholder="+880 17xx-xxxxxx" value={formData.phone} onChange={handleInputChange} className="px-4 py-3 rounded-xl bg-background border border-card-border text-xs text-foreground focus:outline-none focus:border-primary transition-all" />
+              <button 
+                type="button" 
+                onClick={() => setPaymentMethod('bKash')} 
+                className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all cursor-pointer ${
+                  paymentMethod === 'bKash' 
+                  ? 'border-primary bg-primary/5 text-primary shadow-sm scale-[1.02]' 
+                  : 'border-card-border bg-background text-muted hover:border-primary/40'
+                }`}
+              >
+                <Smartphone size={26} className="mb-2" />
+                <span className="text-xs font-bold">bKash (Manual)</span>
+              </button>
+
+              <button 
+                type="button" 
+                onClick={() => setPaymentMethod('Nagad')} 
+                className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all cursor-pointer ${
+                  paymentMethod === 'Nagad' 
+                  ? 'border-primary bg-primary/5 text-primary shadow-sm scale-[1.02]' 
+                  : 'border-card-border bg-background text-muted hover:border-primary/40'
+                }`}
+              >
+                <CreditCard size={26} className="mb-2" />
+                <span className="text-xs font-bold">Nagad (Manual)</span>
+              </button>
+
             </div>
           </div>
 
           <button
             type="submit"
             disabled={isPlacingOrder || !formData.city}
-            className="mt-4 w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-primary text-white font-black text-xs hover:bg-primary-hover disabled:bg-primary/70 transition-all shadow-md cursor-pointer tracking-wide"
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-primary text-white font-black text-xs hover:bg-primary-hover disabled:bg-primary/70 transition-all shadow-md cursor-pointer tracking-wide"
           >
             {isPlacingOrder ? (
-              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Placing Order...</>
+              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Processing...</>
             ) : (
-              /* 🟢 Updated Button text with Grand Total */
               `Place Order ($${Math.round(grandTotal)})` 
             )}
           </button>
@@ -245,15 +297,13 @@ export default function CheckoutPage() {
                 <span className="font-bold text-foreground">${Math.round(subTotal)}</span>
               </div>
               
-              {/* 🟢 Dynamic Shipping Cost UI */}
               <div className="flex justify-between text-muted transition-all duration-300">
                 <span>Shipping</span>
-                <span className="font-bold text-emerald-600">
+                <span className="font-bold text-primary">
                   {settings ? (formData.city ? `+$${shippingCost}` : 'Select Zone') : 'Calculating...'}
                 </span>
               </div>
               
-              {/* 🟢 Dynamic Grand Total */}
               <div className="flex justify-between text-sm font-black text-foreground pt-3 border-t border-card-border mt-2 transition-all duration-300">
                 <span>Total Amount</span>
                 <span className="text-primary">${Math.round(grandTotal)}</span>
