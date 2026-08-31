@@ -25,13 +25,31 @@ export default function Navbar() {
   const { wishlistItems, openWishlist } = useWishlistStore();
   const wishlistCount = wishlistItems.length;
 
+  // 🟢 Optimized: Added staleTime (5 mins) to prevent unnecessary background fetching on every re-render
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
       const res = await apiClient.get("/store/collections/");
       return res.data.results || res.data;
     },
+    staleTime: 5 * 60 * 1000,
   });
+
+  // 🟢 Optimized: Fetches store settings dynamically with a 1-hour cache for blazing fast UI
+  const { data: settingsData } = useQuery({
+    queryKey: ["store_settings"],
+    queryFn: async () => {
+      const res = await apiClient.get("/store/settings/");
+      return res.data;
+    },
+    staleTime: 60 * 60 * 1000, 
+  });
+
+  // Extract dynamic store name safely
+  const settings = Array.isArray(settingsData) 
+    ? settingsData[0] 
+    : settingsData?.results?.[0] || settingsData || {};
+  const storeName = settings.store_name || "Petora BD";
 
   const { data: user, refetch: refetchUser } = useQuery({
     queryKey: ["currentUser"],
@@ -72,28 +90,19 @@ export default function Navbar() {
     };
   }, [cartId, fetchCart]);
 
-const handleLogout = () => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    
-    document.cookie = "access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
 
-    window.location.href = "/signin";
-  }
-};
-  // const handleLogout = async () => {
-  //   try {
-  //     await apiClient.post("/auth/token/logout/").catch(() => {});
-  //   } catch (error) {
-  //     console.error("Logout error", error);
-  //   } finally {
-  //     setIsAccountOpen(false);
-  //     refetchUser();
-  //     router.push("/signin");
-  //   }
-  // };
+      document.cookie =
+        "access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie =
+        "refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      window.location.href = "/signin";
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,9 +136,11 @@ const handleLogout = () => {
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-4">
           <div className="flex justify-between items-center gap-6">
+            
+            {/* 🟢 Dynamic Store Name applied here */}
             <Link href="/" className="flex items-center gap-1 shrink-0 group">
               <span className="text-3xl font-black text-primary tracking-tight group-hover:scale-105 transition-transform duration-300">
-                Petora BD
+                {storeName}
               </span>
               <span className="w-2 h-2 rounded-full bg-yellow-400 mt-2 animate-pulse"></span>
             </Link>
@@ -194,13 +205,13 @@ const handleLogout = () => {
             </form>
 
             <div className="hidden xl:flex items-center gap-6 text-sm font-medium text-text-gray">
-              <Link 
-  href="/blog" 
-  className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors"
->
-  <BookOpen size={18} />
-  Blog
-</Link>
+              <Link
+                href="/blog"
+                className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors"
+              >
+                <BookOpen size={18} />
+                Blog
+              </Link>
               <Link
                 href="#"
                 className="flex items-center gap-1.5 hover:text-primary transition-colors"
@@ -355,7 +366,6 @@ const handleLogout = () => {
                   <div className="absolute right-0 mt-3 w-48 bg-white border border-border-color rounded-xl shadow-xl py-2 z-50 animate-fadeIn">
                     {user ? (
                       <>
-                        {/* লগইন করা থাকলে: My Profile এবং Logout */}
                         <Link
                           href="/profile"
                           onClick={() => setIsAccountOpen(false)}
@@ -373,7 +383,6 @@ const handleLogout = () => {
                       </>
                     ) : (
                       <>
-                        {/* লগইন করা না থাকলে: শুধু Login */}
                         <Link
                           href="/signin"
                           onClick={() => setIsAccountOpen(false)}
