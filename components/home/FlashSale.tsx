@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import { Zap } from "lucide-react";
 import ProductSkeleton from '../ui/ProductSkeleton';
 import Link from 'next/link';
 import { useWishlistStore } from '@/store/useWishlistStore';
@@ -56,18 +57,17 @@ export default function FlashSale({ products, isLoading }: { products: any, isLo
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-28 bg-primary/5 blur-[90px] pointer-events-none"></div>
 
       <div className="px-8 pt-8 pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between text-foreground relative z-10 gap-4">
-        <div className="flex items-center gap-4">
-          <div className="bg-primary/10 p-3 rounded-2xl text-primary shadow-xs">
-            <svg className="w-6 h-6 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clipRule="evenodd" /></svg>
-          </div>
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+        <div className="flex-1 w-full mb-6 sm:mb-0">
+          <div className="flex items-center gap-3 w-full">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
               Flash Sale
             </h2>
-            <p className="text-muted text-xs sm:text-sm font-normal tracking-wide mt-0.5">
-              Limited time offers on handpicked premium choices
-            </p>
+            <Zap size={28} className="text-green-700/280 fill-green-500/80 shrink-0" />
           </div>
+          
+          <p className="text-slate-500 text-base font-medium mt-2">
+            Limited time offers on handpicked premium choices
+          </p>
         </div>
         
         <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">

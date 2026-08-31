@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BookOpen } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -193,12 +194,13 @@ const handleLogout = () => {
             </form>
 
             <div className="hidden xl:flex items-center gap-6 text-sm font-medium text-text-gray">
-              <Link
-                href="#"
-                className="flex items-center gap-1.5 hover:text-primary transition-colors"
-              >
-                <span className="text-orange-500">🔥</span> Hot Deals
-              </Link>
+              <Link 
+  href="/blog" 
+  className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors"
+>
+  <BookOpen size={18} />
+  Blog
+</Link>
               <Link
                 href="#"
                 className="flex items-center gap-1.5 hover:text-primary transition-colors"

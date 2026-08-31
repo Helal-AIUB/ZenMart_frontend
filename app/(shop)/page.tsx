@@ -8,6 +8,7 @@ import HeroCarousel from '@/components/home/HeroCarousel';
 import TrustBadges from '@/components/home/TrustBadges';
 import FlashSale from '@/components/home/FlashSale';
 import NewArrivals from '@/components/home/NewArrivals';
+import BlogSection from '@/components/home/BlogSection';
 
 export default function Home() {
   const { data: products, isLoading: loadingProducts } = useQuery<Product[]>({
@@ -33,6 +34,7 @@ export default function Home() {
       </section>
 
       {/* Trust Badges Area */}
+      <BlogSection />
       <TrustBadges />
 
     </main>

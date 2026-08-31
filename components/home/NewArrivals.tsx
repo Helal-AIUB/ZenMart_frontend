@@ -7,6 +7,7 @@ import ProductSkeleton from "../ui/ProductSkeleton";
 import Link from "next/link";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useCartStore } from "@/store/useCartStore";
+import { PawPrint } from "lucide-react";
 
 export default function NewArrivals() {
   const [selectedCategory, setSelectedCategory] = useState<number | "all">(
@@ -69,13 +70,17 @@ export default function NewArrivals() {
     <section className="my-14 bg-card rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden relative border border-card-border group font-sans p-8">
       <div className="absolute top-0 right-1/4 w-[60%] h-28 bg-primary/5 blur-[90px] pointer-events-none"></div>
 
-      {/* Header & View All */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 relative z-10">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            New Arrivals
-          </h2>
-          <p className="text-muted text-xs sm:text-sm font-normal tracking-wide mt-0.5">
+      {/* 🟢 Green Bold Primary Theme Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mb-6 relative z-10 w-full">
+        <div className="flex-1 w-full">
+          <div className="flex items-center gap-3 w-full">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
+              New Arrivals
+            </h2>
+            <PawPrint size={28} className="text-green-500/80 fill-green-500/20 shrink-0" />
+          </div>
+          
+          <p className="text-slate-500 text-base font-medium mt-2">
             Explore the latest products just for you
           </p>
         </div>
@@ -86,11 +91,11 @@ export default function NewArrivals() {
               ? "/products"
               : `/collections/${selectedCategory}`
           }
-          className="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-hover transition-all group/link cursor-pointer"
+          className="group flex items-center gap-1.5 text-sm font-bold text-green-700 bg-green-50 px-4 py-2 rounded-full hover:bg-green-600 hover:text-white transition-all duration-300 shrink-0"
         >
           <span>View All</span>
           <svg
-            className="w-4 h-4 transform group-hover/link:translate-x-1 transition-transform"
+            className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
