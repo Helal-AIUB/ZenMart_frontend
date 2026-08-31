@@ -6,11 +6,13 @@ import { apiClient } from "@/services/apiClient";
 import Link from "next/link";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useCartStore } from "@/store/useCartStore";
+import { useStoreSettings } from "@/store/useStoreSettings";
 
 export default function CollectionProductsPage() {
   const params = useParams();
   const collectionId = params.id;
   const [page, setPage] = useState(1);
+  const { currencySymbol } = useStoreSettings();
   const [addingId, setAddingId] = useState<number | null>(null);
   const [addedId, setAddedId] = useState<number | null>(null);
 
@@ -200,10 +202,10 @@ export default function CollectionProductsPage() {
                     <div className="mt-auto flex flex-col gap-3 pt-2.5 border-t border-card-border/60">
                       <div className="flex items-baseline gap-2">
                         <span className="text-base font-extrabold text-primary tracking-tight">
-                          ${currentPrice}
+                          {currencySymbol}{currentPrice}
                         </span>
                         <span className="text-xs text-muted line-through font-normal">
-                          ${originalPrice}
+                          {currencySymbol}{originalPrice}
                         </span>
                       </div>
 

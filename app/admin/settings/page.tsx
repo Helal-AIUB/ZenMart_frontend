@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import { apiClient } from "@/services/apiClient";
 import { motion, AnimatePresence } from "framer-motion";
-import { Store, Truck, ShieldCheck, Loader2, Save, Link as LinkIcon } from "lucide-react";
+import {
+  Store,
+  Truck,
+  ShieldCheck,
+  Loader2,
+  Save,
+  Link as LinkIcon,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function SettingsPage() {
@@ -26,8 +33,10 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     try {
       // Fetching from the dynamic array or object based on DRF response
-      const res = await apiClient.get('/store/settings/');
-      const data = Array.isArray(res.data) ? res.data[0] : (res.data?.results?.[0] || res.data || {});
+      const res = await apiClient.get("/store/settings/");
+      const data = Array.isArray(res.data)
+        ? res.data[0]
+        : res.data?.results?.[0] || res.data || {};
       setFormData(data);
     } catch (error) {
       toast.error("Failed to load settings");
@@ -36,14 +45,16 @@ export default function SettingsPage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-const handleSave = async () => {
+  const handleSave = async () => {
     setSaving(true);
     try {
-      await apiClient.patch('/store/settings/', formData);
+      await apiClient.patch("/store/settings/", formData);
       toast.success("Settings updated successfully!");
     } catch (error) {
       toast.error("Failed to save settings");
@@ -52,13 +63,20 @@ const handleSave = async () => {
     }
   };
 
-  if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-emerald-500 w-10 h-10" /></div>;
+  if (loading)
+    return (
+      <div className="flex justify-center p-20">
+        <Loader2 className="animate-spin text-emerald-500 w-10 h-10" />
+      </div>
+    );
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-10 font-sans">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Platform Settings</h1>
-        <p className="text-sm text-slate-500 mt-1">Manage Petora BD configurations and preferences</p>
+        <p className="text-sm text-slate-500 mt-1">
+          Manage Petora BD configurations and preferences
+        </p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -72,10 +90,15 @@ const handleSave = async () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                  isActive ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                  isActive
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
                 }`}
               >
-                <Icon size={18} className={isActive ? "text-emerald-600" : "text-slate-400"} />
+                <Icon
+                  size={18}
+                  className={isActive ? "text-emerald-600" : "text-slate-400"}
+                />
                 {tab.label}
               </button>
             );
@@ -96,38 +119,130 @@ const handleSave = async () => {
               {/* 🟢 General Store Info Tab */}
               {activeTab === "general" && (
                 <div className="space-y-5">
-                  <h2 className="text-lg font-bold text-slate-800 border-b pb-2">Store Information</h2>
-                  
+                  <h2 className="text-lg font-bold text-slate-800 border-b pb-2">
+                    Store Information
+                  </h2>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Store Name</label>
-                      <input name="store_name" value={formData.store_name || ""} onChange={handleChange} placeholder="e.g. Petora BD" className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Store Name
+                      </label>
+                      <input
+                        name="store_name"
+                        value={formData.store_name || ""}
+                        onChange={handleChange}
+                        placeholder="e.g. Petora BD"
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Support Email</label>
-                      <input name="support_email" type="email" value={formData.support_email || ""} onChange={handleChange} placeholder="support@petorabd.com" className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Support Email
+                      </label>
+                      <input
+                        name="support_email"
+                        type="email"
+                        value={formData.support_email || ""}
+                        onChange={handleChange}
+                        placeholder="support@petorabd.com"
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
+                  </div>
+
+                  {/* 🟢 Custom Currency Dropdown */}
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase">
+                      Currency Symbol
+                    </label>
+                    <div className="relative mt-1">
+                      <select
+                        name="currency_symbol"
+                        value={formData.currency_symbol || "৳"}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all appearance-none cursor-pointer text-slate-700 font-medium"
+                      >
+                        <option value="৳">Taka (৳)</option>
+                        <option value="$">US Dollar ($)</option>
+                        <option value="€">Euro (€)</option>
+                        <option value="£">Pound (£)</option>
+                        <option value="₹">Rupee (₹)</option>
+                      </select>
+                      {/* Custom Dropdown Arrow */}
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1.5 ml-1">
+                      Select the main currency for your store.
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Contact Phone</label>
-                      <input name="contact_phone" value={formData.contact_phone || ""} onChange={handleChange} placeholder="e.g. +880 1234 567890" className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Contact Phone
+                      </label>
+                      <input
+                        name="contact_phone"
+                        value={formData.contact_phone || ""}
+                        onChange={handleChange}
+                        placeholder="e.g. +880 1234 567890"
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Business Hours</label>
-                      <input name="business_hours" value={formData.business_hours || ""} onChange={handleChange} placeholder="e.g. 9:00 AM - 10:00 PM" className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Business Hours
+                      </label>
+                      <input
+                        name="business_hours"
+                        value={formData.business_hours || ""}
+                        onChange={handleChange}
+                        placeholder="e.g. 9:00 AM - 10:00 PM"
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase">Store Address</label>
-                    <input name="address" value={formData.address || ""} onChange={handleChange} placeholder="Full physical address" className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                    <label className="text-xs font-bold text-slate-500 uppercase">
+                      Store Address
+                    </label>
+                    <input
+                      name="address"
+                      value={formData.address || ""}
+                      onChange={handleChange}
+                      placeholder="Full physical address"
+                      className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                    />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase">Short Description (Footer)</label>
-                    <textarea name="short_description" value={formData.short_description || ""} onChange={handleChange} rows={3} placeholder="Short text showing below the footer logo..." className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all resize-none"></textarea>
+                    <label className="text-xs font-bold text-slate-500 uppercase">
+                      Short Description (Footer)
+                    </label>
+                    <textarea
+                      name="short_description"
+                      value={formData.short_description || ""}
+                      onChange={handleChange}
+                      rows={3}
+                      placeholder="Short text showing below the footer logo..."
+                      className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all resize-none"
+                    ></textarea>
                   </div>
                 </div>
               )}
@@ -135,21 +250,50 @@ const handleSave = async () => {
               {/* 🟢 Social Media Links Tab */}
               {activeTab === "social" && (
                 <div className="space-y-5">
-                  <h2 className="text-lg font-bold text-slate-800 border-b pb-2">Social Media Links</h2>
-                  <p className="text-xs text-slate-500 mb-4">Leave fields blank to hide the respective social icons from the footer.</p>
-                  
+                  <h2 className="text-lg font-bold text-slate-800 border-b pb-2">
+                    Social Media Links
+                  </h2>
+                  <p className="text-xs text-slate-500 mb-4">
+                    Leave fields blank to hide the respective social icons from
+                    the footer.
+                  </p>
+
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">Facebook URL</label>
-                      <input name="facebook_link" value={formData.facebook_link || ""} onChange={handleChange} placeholder="https://facebook.com/yourpage" className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                        Facebook URL
+                      </label>
+                      <input
+                        name="facebook_link"
+                        value={formData.facebook_link || ""}
+                        onChange={handleChange}
+                        placeholder="https://facebook.com/yourpage"
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">Instagram URL</label>
-                      <input name="instagram_link" value={formData.instagram_link || ""} onChange={handleChange} placeholder="https://instagram.com/yourprofile" className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                        Instagram URL
+                      </label>
+                      <input
+                        name="instagram_link"
+                        value={formData.instagram_link || ""}
+                        onChange={handleChange}
+                        placeholder="https://instagram.com/yourprofile"
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">YouTube URL</label>
-                      <input name="youtube_link" value={formData.youtube_link || ""} onChange={handleChange} placeholder="https://youtube.com/@yourchannel" className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                        YouTube URL
+                      </label>
+                      <input
+                        name="youtube_link"
+                        value={formData.youtube_link || ""}
+                        onChange={handleChange}
+                        placeholder="https://youtube.com/@yourchannel"
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
                   </div>
                 </div>
@@ -158,15 +302,33 @@ const handleSave = async () => {
               {/* 🟢 Shipping Tab */}
               {activeTab === "shipping" && (
                 <div className="space-y-4">
-                  <h2 className="text-lg font-bold text-slate-800 border-b pb-2">Delivery Charges</h2>
+                  <h2 className="text-lg font-bold text-slate-800 border-b pb-2">
+                    Delivery Charges
+                  </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Inside Dhaka (৳)</label>
-                      <input type="number" name="delivery_charge_inside" value={formData.delivery_charge_inside || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Inside Dhaka (৳)
+                      </label>
+                      <input
+                        type="number"
+                        name="delivery_charge_inside"
+                        value={formData.delivery_charge_inside || ""}
+                        onChange={handleChange}
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Outside Dhaka (৳)</label>
-                      <input type="number" name="delivery_charge_outside" value={formData.delivery_charge_outside || ""} onChange={handleChange} className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all" />
+                      <label className="text-xs font-bold text-slate-500 uppercase">
+                        Outside Dhaka (৳)
+                      </label>
+                      <input
+                        type="number"
+                        name="delivery_charge_outside"
+                        value={formData.delivery_charge_outside || ""}
+                        onChange={handleChange}
+                        className="w-full mt-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
                     </div>
                   </div>
                 </div>
@@ -182,8 +344,17 @@ const handleSave = async () => {
 
               {/* Action Button */}
               <div className="pt-6 mt-6 border-t border-slate-100 flex justify-end">
-                <button onClick={handleSave} disabled={saving} className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer">
-                  {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Changes
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  {saving ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Save size={16} />
+                  )}{" "}
+                  Save Changes
                 </button>
               </div>
             </motion.div>

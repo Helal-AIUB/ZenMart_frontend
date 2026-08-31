@@ -6,6 +6,7 @@ import { apiClient } from "@/services/apiClient";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
+import { useStoreSettings } from "@/store/useStoreSettings";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import Link from "next/link";
@@ -16,6 +17,7 @@ export default function ProductDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const { currencySymbol } = useStoreSettings();
   
   // State for image gallery
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -299,10 +301,10 @@ export default function ProductDetailsPage() {
 
                 <div className="flex items-baseline gap-3 mb-4 pb-4 border-b border-card-border/60">
                   <span className="text-3xl font-black text-primary tracking-tight">
-                    ${currentPrice}
+                    {currencySymbol}{currentPrice}
                   </span>
                   <span className="text-sm text-muted line-through font-medium">
-                    ${originalPrice}
+                    {currencySymbol}{originalPrice}
                   </span>
                   {product.inventory > 0 ? (
                     <span className="ml-auto text-emerald-600 font-bold px-2.5 py-1 rounded-lg text-[11px] bg-emerald-50 border border-emerald-100">

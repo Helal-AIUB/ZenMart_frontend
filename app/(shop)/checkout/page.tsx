@@ -5,10 +5,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/services/apiClient";
 import toast from "react-hot-toast";
+import { useStoreSettings } from "@/store/useStoreSettings";
 import { Banknote, CreditCard, Smartphone } from "lucide-react";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { currencySymbol } = useStoreSettings();
   const { cartItems, cartId, clearCart } = useCartStore(); 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,9 +104,9 @@ export default function CheckoutPage() {
       
       // 🟢 Redirect Logic Based on Payment Method
       if (paymentMethod === "COD") {
-        setIsSubmitted(true); // COD হলে আগের মতোই সাকসেস মেসেজ দেখাবে
+        setIsSubmitted(true); 
       } else {
-        router.push(`/checkout/payment/${res.data.id}`); // bKash/Nagad হলে পেমেন্ট পেজে পাঠাবে
+        router.push(`/checkout/payment/${res.data.id}`); // redirect to bKash/Nagad page
       }
 
     } catch (error: any) {
@@ -267,7 +269,7 @@ export default function CheckoutPage() {
             {isPlacingOrder ? (
               <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Processing...</>
             ) : (
-              `Place Order ($${Math.round(grandTotal)})` 
+              `Place Order (${currencySymbol}${Math.round(grandTotal)})` 
             )}
           </button>
         </form>
@@ -285,7 +287,7 @@ export default function CheckoutPage() {
                     {item.product?.title} <strong className="text-foreground">x{item.quantity}</strong>
                   </span>
                   <span className="font-bold text-foreground">
-                    ${Math.round(Number(item.product?.unit_price || 0) * item.quantity)}
+                    {currencySymbol}{Math.round(Number(item.product?.unit_price || 0) * item.quantity)}
                   </span>
                 </div>
               ))}
@@ -294,19 +296,19 @@ export default function CheckoutPage() {
             <div className="flex flex-col gap-2 pt-4 border-t border-card-border text-xs">
               <div className="flex justify-between text-muted">
                 <span>Subtotal</span>
-                <span className="font-bold text-foreground">${Math.round(subTotal)}</span>
+                <span className="font-bold text-foreground">{currencySymbol}{Math.round(subTotal)}</span>
               </div>
               
               <div className="flex justify-between text-muted transition-all duration-300">
                 <span>Shipping</span>
                 <span className="font-bold text-primary">
-                  {settings ? (formData.city ? `+$${shippingCost}` : 'Select Zone') : 'Calculating...'}
+                  {settings ? (formData.city ? `+${currencySymbol}${shippingCost}` : 'Select Zone') : 'Calculating...'}
                 </span>
               </div>
               
               <div className="flex justify-between text-sm font-black text-foreground pt-3 border-t border-card-border mt-2 transition-all duration-300">
                 <span>Total Amount</span>
-                <span className="text-primary">${Math.round(grandTotal)}</span>
+                <span className="text-primary">{currencySymbol}{Math.round(grandTotal)}</span>
               </div>
             </div>
           </div>

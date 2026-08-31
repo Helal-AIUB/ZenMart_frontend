@@ -4,13 +4,14 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/services/apiClient";
 import toast from "react-hot-toast";
+import { useStoreSettings } from "@/store/useStoreSettings";
 import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
 
 export default function PaymentGatewayPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const resolvedParams = use(params);
   const orderId = resolvedParams.id;
-
+  const { currencySymbol } = useStoreSettings();
   const [order, setOrder] = useState<any>(null);
   const [trxId, setTrxId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,7 +97,7 @@ export default function PaymentGatewayPage({ params }: { params: Promise<{ id: s
         <div className="p-8 flex flex-col gap-6">
           <div className="text-center">
             <p className="text-xs font-bold text-muted uppercase tracking-wider">Total Amount to Pay</p>
-            <h2 className={`text-4xl font-black ${textColor} mt-1`}>${Math.round(totalAmount)}</h2>
+            <h2 className={`text-4xl font-black ${textColor} mt-1`}>{currencySymbol}{Math.round(totalAmount)}</h2>
           </div>
 
           <div className={`${lightColor} border border-card-border p-5 rounded-2xl space-y-3`}>
@@ -106,7 +107,7 @@ export default function PaymentGatewayPage({ params }: { params: Promise<{ id: s
               <li>Select <strong className="text-foreground">Send Money</strong></li>
               {/* 🟢 Fixed: Dynamically showing bKash or Nagad Number */}
               <li>Enter our {order.payment_method} Number: <strong className="text-foreground">01825-358009</strong> (Personal)</li>
-              <li>Enter the exact amount: <strong className="text-foreground">${Math.round(totalAmount)}</strong></li>
+              <li>Enter the exact amount: <strong className="text-foreground">{currencySymbol}{Math.round(totalAmount)}</strong></li>
               <li>Use Reference: <strong className="text-foreground">Order #{order.id}</strong></li>
             </ol>
           </div>

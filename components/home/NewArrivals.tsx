@@ -7,12 +7,14 @@ import ProductSkeleton from "../ui/ProductSkeleton";
 import Link from "next/link";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useCartStore } from "@/store/useCartStore";
+import { useStoreSettings } from "@/store/useStoreSettings";
 import { PawPrint } from "lucide-react";
 
 export default function NewArrivals() {
   const [selectedCategory, setSelectedCategory] = useState<number | "all">(
     "all",
   );
+  const { currencySymbol } = useStoreSettings();
   const [addingId, setAddingId] = useState<number | null>(null);
   const [addedId, setAddedId] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -260,10 +262,10 @@ export default function NewArrivals() {
                     <div className="mt-auto flex flex-col gap-3 pt-2.5 border-t border-card-border/60">
                       <div className="flex items-baseline gap-2">
                         <span className="text-base font-extrabold text-primary tracking-tight">
-                          ${currentPrice}
+                          {currencySymbol}{currentPrice}
                         </span>
                         <span className="text-xs text-muted line-through font-normal">
-                          ${originalPrice}
+                          {currencySymbol}{originalPrice}
                         </span>
                       </div>
 
