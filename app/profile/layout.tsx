@@ -12,12 +12,12 @@ import toast from "react-hot-toast";
 const navItems = [
   { name: "Dashboard", href: "/profile", icon: LayoutDashboard },
   { name: "My Orders", href: "/profile/orders", icon: ShoppingBag },
-  { name: "Address Book", href: "/profile/addresses", icon: MapPin },
-  { name: "Payment Methods", href: "/profile/payments", icon: CreditCard },
-  { name: "Wishlist", href: "/profile/wishlist", icon: Heart },
-  { name: "My Pets", href: "/profile/pets", icon: Dog },
+  // { name: "Address Book", href: "/profile/addresses", icon: MapPin },
+  // { name: "Payment Methods", href: "/profile/payments", icon: CreditCard },
+  // { name: "Wishlist", href: "/profile/wishlist", icon: Heart },
+  // { name: "My Pets", href: "/profile/pets", icon: Dog },
   { name: "Profile Settings", href: "/profile/settings", icon: Settings },
-  { name: "Notification Settings", href: "/profile/notifications", icon: Bell },
+  // { name: "Notification Settings", href: "/profile/notifications", icon: Bell },
 ];
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
