@@ -28,6 +28,8 @@ interface Order {
   payment_method?: string;
   transaction_id?: string;
   items: OrderItem[];
+  coupon_code?: string;         
+  discount_amount?: string | number;
 }
 
 // SWR Fetcher for ultra-fast data fetching and caching
@@ -180,7 +182,11 @@ export default function AdminOrdersPage() {
                 <tr><td colSpan={6} className="px-6 py-20 text-center text-slate-400"><AlertCircle size={32} className="mx-auto mb-3 text-slate-300" /> No orders match your filters.</td></tr>
               ) : (
                 currentDisplayedOrders.map((order) => {
-                  const total = order.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0) + Number(order.delivery_charge || 0);
+                  const subTotal = order.items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+                  const shipping = Number(order.delivery_charge || 0);
+                  const discount = Number(order.discount_amount || 0);
+                  const total = Math.max(0, Math.round(subTotal + shipping - discount)); 
+
                   return (
                     <tr key={order.id} className="hover:bg-slate-50/80 transition-colors group">
                       <td className="px-4 sm:px-6 py-4 font-extrabold text-slate-700">#{order.id.toString().padStart(4, '0')}</td>
@@ -189,7 +195,16 @@ export default function AdminOrdersPage() {
                         <p className="text-xs text-slate-500">{order.phone || "No phone"}</p>
                       </td>
                       <td className="px-4 sm:px-6 py-4 text-slate-500 font-medium whitespace-nowrap">{new Date(order.placed_at).toLocaleDateString()}</td>
-                      <td className="px-4 sm:px-6 py-4 font-bold text-emerald-600">${total.toFixed(2)}</td>
+                      
+                      <td className="px-4 sm:px-6 py-4">
+                        <p className="font-bold text-emerald-600">${total}</p>
+                        {order.coupon_code && (
+                          <span className="inline-block mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded text-[10px] font-bold">
+                            {order.coupon_code}
+                          </span>
+                        )}
+                      </td>
+                      
                       <td className="px-4 sm:px-6 py-4">{renderStatusBadge(order.payment_status)}</td>
                       <td className="px-4 sm:px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">

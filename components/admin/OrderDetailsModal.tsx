@@ -22,6 +22,7 @@ import {
   Search,
   PlusCircle,
   ShoppingBag,
+  Tag,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -54,6 +55,9 @@ interface Order {
   payment_method?: string;
   transaction_id?: string;
   items: OrderItem[];
+  // 🟢 Added Coupon Fields
+  coupon_code?: string;
+  discount_amount?: string | number;
 }
 
 interface OrderDetailsModalProps {
@@ -75,7 +79,7 @@ export default function OrderDetailsModal({
   const [deliveryStatus, setDeliveryStatus] = useState<string>("Placed");
   const [localItems, setLocalItems] = useState<OrderItem[]>([]);
 
-  // 🟢 Product Search States
+  // Product Search States
   const [isAddingProduct, setIsAddingProduct] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -91,7 +95,7 @@ export default function OrderDetailsModal({
     }
   }, [order]);
 
-  // 🟢 Debounced Search Logic
+  // Debounced Search Logic
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
@@ -116,12 +120,11 @@ export default function OrderDetailsModal({
 
   if (!isOpen || !order) return null;
 
-  const itemsTotal = localItems.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0,
-  );
+  // 🟢 Fixed Calculation (with rounding and discount applied)
+  const itemsTotal = localItems.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
   const deliveryCharge = Number(order.delivery_charge || 0);
-  const totalAmount = itemsTotal + deliveryCharge;
+  const discountAmount = Number(order.discount_amount || 0);
+  const totalAmount = Math.max(0, Math.round(itemsTotal + deliveryCharge - discountAmount));
 
   const handleCopyTrxId = () => {
     if (order.transaction_id) {
@@ -194,11 +197,7 @@ export default function OrderDetailsModal({
     }
   };
 
-  const handleQuantityChange = async (
-    itemId: number,
-    currentQty: number,
-    change: number,
-  ) => {
+  const handleQuantityChange = async (itemId: number, currentQty: number, change: number) => {
     const newQty = currentQty + change;
     if (newQty < 1) return;
     setUpdatingItemId(itemId);
@@ -219,12 +218,7 @@ export default function OrderDetailsModal({
   };
 
   const handleDeleteItem = async (itemId: number) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to remove this item from the order?",
-      )
-    )
-      return;
+    if (!window.confirm("Are you sure you want to remove this item from the order?")) return;
     setUpdatingItemId(itemId);
     try {
       await apiClient.delete(`/store/orders/${order.id}/items/${itemId}/`);
@@ -303,7 +297,6 @@ export default function OrderDetailsModal({
 
   return (
     <>
-      {/* 🟢 Main Order Details Modal (z-50) */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm transition-all overflow-y-auto">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0 bg-slate-50/50">
@@ -355,7 +348,7 @@ export default function OrderDetailsModal({
                   Total Amount
                 </p>
                 <p className="text-lg font-black text-emerald-600">
-                  ${totalAmount.toFixed(2)}
+                  ${totalAmount}
                 </p>
               </div>
             </div>
@@ -405,6 +398,8 @@ export default function OrderDetailsModal({
                         {order.payment_method || "COD"}
                       </span>
                     </div>
+                    
+                    {/* 🟢 Transaction ID Section */}
                     {order.payment_method !== "COD" && (
                       <div className="flex justify-between items-center bg-blue-50/50 p-3 rounded-lg border border-blue-100">
                         <span className="text-sm text-slate-500 font-medium">
@@ -426,6 +421,25 @@ export default function OrderDetailsModal({
                         </div>
                       </div>
                     )}
+
+                    {/* 🟢 Applied Coupon Section */}
+                    {order.coupon_code && (
+                      <div className="flex justify-between items-center bg-emerald-50/50 p-3 rounded-lg border border-emerald-100 mt-2">
+                        <div className="flex items-center gap-2 text-emerald-700">
+                          <Tag size={16} />
+                          <span className="text-sm font-bold uppercase tracking-wider">
+                            {order.coupon_code}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500 font-medium">Discount</span>
+                          <span className="text-sm font-black text-emerald-600 bg-white px-2.5 py-0.5 rounded-full border border-emerald-100 shadow-sm">
+                            -${discountAmount}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 </div>
               </div>
@@ -437,7 +451,6 @@ export default function OrderDetailsModal({
                   Order Items ({localItems.length})
                 </h3>
 
-                {/* 🟢 Add Product Button */}
                 <button
                   type="button"
                   onClick={() => setIsAddingProduct(true)}
@@ -625,11 +638,9 @@ export default function OrderDetailsModal({
         </div>
       </div>
 
-      {/* 🟢 Floating Command Palette for Adding Product (z-60) */}
       {isAddingProduct && (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[15vh] px-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-top-4 duration-300 border border-slate-100">
-            {/* Search Input Area */}
             <div className="relative flex items-center px-4 border-b border-slate-100 bg-white">
               <Search className="text-slate-400 shrink-0" size={20} />
               <input
@@ -657,7 +668,6 @@ export default function OrderDetailsModal({
               </button>
             </div>
 
-            {/* Results Area */}
             <div className="max-h-[50vh] overflow-y-auto bg-slate-50/50 p-2 custom-scrollbar">
               {!searchQuery ? (
                 <div className="px-6 py-12 text-center flex flex-col items-center justify-center text-slate-400">

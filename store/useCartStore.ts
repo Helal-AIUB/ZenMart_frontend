@@ -6,6 +6,11 @@ interface CartStore {
   cartId: string | null;
   cartItems: any[];
   isCartOpen: boolean;
+  
+  // 🟢 Coupon States
+  appliedCoupon: string | null;
+  discountAmount: number;
+
   openCart: () => void;
   closeCart: () => void;
   fetchCart: () => Promise<void>;
@@ -17,7 +22,10 @@ interface CartStore {
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
 
-  // Added clearCart method
+  // 🟢 Coupon Actions
+  applyCoupon: (code: string, amount: number) => void;
+  removeCoupon: () => void;
+
   clearCart: () => void;
 }
 
@@ -27,6 +35,9 @@ export const useCartStore = create<CartStore>()(
       cartId: null,
       cartItems: [],
       isCartOpen: false,
+      
+      appliedCoupon: null,
+      discountAmount: 0,
 
       openCart: () => set({ isCartOpen: true }),
       closeCart: () => set({ isCartOpen: false }),
@@ -34,58 +45,36 @@ export const useCartStore = create<CartStore>()(
       fetchCart: async () => {
         const { cartId } = get();
         if (!cartId) return;
-
         try {
           const res = await apiClient.get(`/store/carts/${cartId}/`);
           set({ cartItems: res.data.items || [] });
         } catch (error: any) {
-          if (
-            error.response?.status === 404 ||
-            error.response?.status === 500
-          ) {
-            set({ cartId: null, cartItems: [] });
+          if (error.response?.status === 404 || error.response?.status === 500) {
+            set({ cartId: null, cartItems: [], appliedCoupon: null, discountAmount: 0 });
           }
         }
       },
 
-      addToCart: async (
-        productId: number,
-        quantity: number,
-        isRetry = false
-      ) => {
+      addToCart: async (productId: number, quantity: number, isRetry = false) => {
         let { cartId } = get();
-
         try {
           if (!cartId) {
             const res = await apiClient.post('/store/carts/');
             cartId = res.data.id || res.data.cart_id;
-
-            if (!cartId) {
-              throw new Error('Cart ID is missing from API response!');
-            }
-
+            if (!cartId) throw new Error('Cart ID is missing from API response!');
             set({ cartId });
           }
-
           await apiClient.post(`/store/carts/${cartId}/items/`, {
             product_id: productId,
             quantity: quantity,
           });
-
           await get().fetchCart();
         } catch (error: any) {
-          if (
-            (error.response?.status === 404 ||
-              error.response?.status === 500) &&
-            !isRetry
-          ) {
-            set({ cartId: null, cartItems: [] });
+          if ((error.response?.status === 404 || error.response?.status === 500) && !isRetry) {
+            set({ cartId: null, cartItems: [], appliedCoupon: null, discountAmount: 0 });
             await get().addToCart(productId, quantity, true);
           } else {
-            console.error(
-              'Failed to add to cart:',
-              error.response?.data || error.message
-            );
+            console.error('Failed to add to cart:', error.response?.data || error.message);
             throw error;
           }
         }
@@ -94,19 +83,13 @@ export const useCartStore = create<CartStore>()(
       updateQuantity: async (itemId: number, quantity: number) => {
         const { cartId, cartItems } = get();
         if (!cartId) return;
-
         const previousItems = [...cartItems];
         const optimisticItems = cartItems.map((item: any) =>
           item.id === itemId ? { ...item, quantity: quantity } : item
         );
-
         set({ cartItems: optimisticItems });
-
         try {
-          await apiClient.patch(
-            `/store/carts/${cartId}/items/${itemId}/`,
-            { quantity }
-          );
+          await apiClient.patch(`/store/carts/${cartId}/items/${itemId}/`, { quantity });
         } catch (error) {
           console.error('Failed to update quantity', error);
           set({ cartItems: previousItems });
@@ -116,14 +99,9 @@ export const useCartStore = create<CartStore>()(
       removeItem: async (itemId: number) => {
         const { cartId, cartItems } = get();
         if (!cartId) return;
-
         const previousItems = [...cartItems];
-        const optimisticItems = cartItems.filter(
-          (item: any) => item.id !== itemId
-        );
-
+        const optimisticItems = cartItems.filter((item: any) => item.id !== itemId);
         set({ cartItems: optimisticItems });
-
         try {
           await apiClient.delete(`/store/carts/${cartId}/items/${itemId}/`);
         } catch (error) {
@@ -132,17 +110,32 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      // ✅ Clear the entire cart from frontend state
+      // 🟢 New Actions for Coupon
+      applyCoupon: (code: string, amount: number) => {
+        set({ appliedCoupon: code, discountAmount: amount });
+      },
+      
+      removeCoupon: () => {
+        set({ appliedCoupon: null, discountAmount: 0 });
+      },
+
       clearCart: () => {
         set({
           cartId: null,
           cartItems: [],
+          appliedCoupon: null,
+          discountAmount: 0,
         });
       },
     }),
     {
       name: 'cart-storage',
-      partialize: (state) => ({ cartId: state.cartId }),
+      // Store the coupon state so it survives page reloads
+      partialize: (state) => ({ 
+        cartId: state.cartId, 
+        appliedCoupon: state.appliedCoupon, 
+        discountAmount: state.discountAmount 
+      }),
     }
   )
 );

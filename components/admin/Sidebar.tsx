@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
   LayoutDashboard, ShoppingBag, Users, 
-  ShoppingCart, Bone, Settings, ChevronLeft, ChevronRight 
+  ShoppingCart, Bone, Settings, ChevronLeft, ChevronRight, TicketPercent 
 } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -15,6 +15,7 @@ const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
   { name: "Orders", icon: ShoppingCart, path: "/admin/orders" },
   { name: "Products", icon: ShoppingBag, path: "/admin/products" },
+  { name: "Coupons", icon: TicketPercent, path: "/admin/coupons" },
   { name: "Customers", icon: Users, path: "/admin/customers" },
   { name: "Pet Content", icon: Bone, path: "/admin/pet-content" },
   { name: "Settings", icon: Settings, path: "/admin/settings" },
@@ -46,7 +47,7 @@ export default function Sidebar() {
 
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
         {menuItems.map((item) => {
-          const isActive = pathname === item.path;
+          const isActive = pathname === item.path || (pathname?.startsWith(item.path) && item.path !== "/admin");
           const Icon = item.icon;
 
           return (
