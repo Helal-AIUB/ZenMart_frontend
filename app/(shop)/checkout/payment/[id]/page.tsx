@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/services/apiClient";
 import toast from "react-hot-toast";
 import { useStoreSettings } from "@/store/useStoreSettings";
-import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
+import { CheckCircle, ArrowRight, Loader2, Tag } from "lucide-react";
 
 export default function PaymentGatewayPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -64,11 +64,15 @@ export default function PaymentGatewayPage({ params }: { params: Promise<{ id: s
   if (!order) return null;
 
   const isBkash = order.payment_method === 'bKash';
-  // 🟢 Fixed: Nagad's Khoyeri/Dark Red color applied (#c3161c)
   const themeColor = isBkash ? "bg-[#e2136e]" : "bg-[#c3161c]"; 
   const lightColor = isBkash ? "bg-[#e2136e]/5" : "bg-[#c3161c]/5";
   const textColor = isBkash ? "text-[#e2136e]" : "text-[#c3161c]";
-  const totalAmount = order.items.reduce((sum: number, i: any) => sum + (Number(i.unit_price) * i.quantity), 0) + Number(order.delivery_charge || 0);
+  
+  // 🟢 Fixed: Added Discount Amount in Calculation
+  const itemsTotal = order.items.reduce((sum: number, i: any) => sum + (Number(i.unit_price) * i.quantity), 0);
+  const deliveryCharge = Number(order.delivery_charge || 0);
+  const discountAmount = Number(order.discount_amount || 0);
+  const totalAmount = Math.max(0, itemsTotal + deliveryCharge - discountAmount);
 
   if (isSuccess) {
     return (
@@ -97,7 +101,19 @@ export default function PaymentGatewayPage({ params }: { params: Promise<{ id: s
         <div className="p-8 flex flex-col gap-6">
           <div className="text-center">
             <p className="text-xs font-bold text-muted uppercase tracking-wider">Total Amount to Pay</p>
-            <h2 className={`text-4xl font-black ${textColor} mt-1`}>{currencySymbol}{Math.round(totalAmount)}</h2>
+            <h2 className={`text-4xl font-black ${textColor} mt-1`}>
+              {currencySymbol}{Math.round(totalAmount)}
+            </h2>
+            
+            {/* 🟢 Visual Feedback for Coupon Discount */}
+            {discountAmount > 0 && (
+              <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-600">
+                <Tag size={12} />
+                <span className="text-[11px] font-bold uppercase tracking-wider">
+                  Discount Applied: -{currencySymbol}{Math.round(discountAmount)}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className={`${lightColor} border border-card-border p-5 rounded-2xl space-y-3`}>
@@ -105,7 +121,6 @@ export default function PaymentGatewayPage({ params }: { params: Promise<{ id: s
             <ol className="text-xs text-muted space-y-2 list-decimal list-inside">
               <li>Open your {order.payment_method} App</li>
               <li>Select <strong className="text-foreground">Send Money</strong></li>
-              {/* 🟢 Fixed: Dynamically showing bKash or Nagad Number */}
               <li>Enter our {order.payment_method} Number: <strong className="text-foreground">01825-358009</strong> (Personal)</li>
               <li>Enter the exact amount: <strong className="text-foreground">{currencySymbol}{Math.round(totalAmount)}</strong></li>
               <li>Use Reference: <strong className="text-foreground">Order #{order.id}</strong></li>

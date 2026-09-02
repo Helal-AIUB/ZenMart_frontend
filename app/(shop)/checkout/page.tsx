@@ -161,12 +161,12 @@ export default function CheckoutPage() {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         
         {/* 🟢 Premium Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-10">
+        {/* <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-10">
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">Checkout</h1>
           <div className="flex items-center gap-2 px-4 py-1.5 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-full text-xs font-bold w-fit">
             <ShieldCheck size={16} /> 100% Secure Checkout
           </div>
-        </div>
+        </div> */}
 
         {/* 🟢 Stepper (Visual) */}
         <div className="hidden md:flex items-center gap-4 mb-10 overflow-x-auto pb-2">
