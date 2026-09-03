@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { apiClient } from "@/services/apiClient";
+import ReportDownloadModal from "@/components/admin/ReportDownloadModal";
 
 // --- Types ---
 interface DashboardStats {
@@ -40,18 +41,19 @@ export default function AdminDashboard() {
   const [revenueData, setRevenueData] = useState([]);
   const [loadingRevenue, setLoadingRevenue] = useState(true);
 
-  // 🟢 Recent Orders States
+  // Recent Orders States
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
-useEffect(() => {
+  // 🟢 Modal State
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+  useEffect(() => {
     // 1. Fetch Dashboard Stats
     const fetchStats = async () => {
       try {
         const res = await apiClient.get("/store/dashboard-stats/");
-        
         setStats(res.data);
-        
       } catch (error) {
         console.error("Failed to fetch dashboard stats", error);
       } finally {
@@ -71,12 +73,11 @@ useEffect(() => {
       }
     };
 
-    // 🟢 3. Fetch Recent Orders
+    // 3. Fetch Recent Orders
     const fetchRecentOrders = async () => {
       try {
         const res = await apiClient.get('/store/orders/');
         const allOrders = res.data.results || res.data;
-        // Sort by newest first and take top 5
         const sortedOrders = allOrders.sort((a: Order, b: Order) => new Date(b.placed_at).getTime() - new Date(a.placed_at).getTime());
         setRecentOrders(sortedOrders.slice(0, 5));
       } catch (error) {
@@ -98,7 +99,6 @@ useEffect(() => {
     { title: "Low Stock Alerts", value: stats?.low_stock_alerts || 0, icon: AlertTriangle, color: "text-rose-500", bg: "bg-rose-50" },
   ];
 
-  // Custom Tooltip for Chart
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -113,7 +113,6 @@ useEffect(() => {
     return null;
   };
 
-  // 🟢 Helper for Status Icon
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'C': return { icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-100', text: 'Paid' };
@@ -125,29 +124,39 @@ useEffect(() => {
 
   return (
     <div className="space-y-6 font-sans pb-10">
-      <div className="flex items-center justify-between">
+      
+      {/* 🟢 Include Modal here */}
+      <ReportDownloadModal 
+        isOpen={isReportModalOpen} 
+        onClose={() => setIsReportModalOpen(false)} 
+      />
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-slate-800">Dashboard Overview</h1>
-        <button className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition shadow-sm">
+        <button 
+          onClick={() => setIsReportModalOpen(true)}
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+        >
           <TrendingUp size={16} /> Download Report
         </button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statCards.map((card, index) => {
           const Icon = card.icon;
           return (
-            <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between transition-transform hover:-translate-y-1 duration-300">
+            <div key={index} className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between transition-transform hover:-translate-y-1 duration-300">
               <div>
-                <p className="text-sm font-medium text-slate-500 mb-1">{card.title}</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 mb-1">{card.title}</p>
                 {loadingStats ? (
                   <div className="h-8 w-16 bg-slate-200 animate-pulse rounded"></div>
                 ) : (
-                  <h3 className="text-3xl font-bold text-slate-800">{card.value}</h3>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-slate-800">{card.value}</h3>
                 )}
               </div>
-              <div className={`p-4 rounded-xl ${card.bg} ${card.color}`}>
-                <Icon size={24} />
+              <div className={`p-3 sm:p-4 rounded-xl ${card.bg} ${card.color}`}>
+                <Icon size={20} className="sm:w-6 sm:h-6" />
               </div>
             </div>
           );
@@ -158,10 +167,10 @@ useEffect(() => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
         
         {/* Revenue Analytics Chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[400px] flex flex-col">
+        <div className="lg:col-span-2 bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-100 min-h-[400px] flex flex-col">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-slate-800">Revenue Analytics</h2>
-            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Last 30 Days</span>
+            <h2 className="text-base sm:text-lg font-semibold text-slate-800">Revenue Analytics</h2>
+            <span className="text-[10px] sm:text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Last 30 Days</span>
           </div>
 
           <div className="flex-1 w-full min-h-[300px]">
@@ -194,11 +203,11 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* 🟢 Premium Recent Orders List */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col min-h-[400px]">
+        {/* Recent Orders List */}
+        <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col min-h-[400px]">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-slate-800">Recent Orders</h2>
-            <Link href="/admin/orders" className="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
+            <h2 className="text-base sm:text-lg font-semibold text-slate-800">Recent Orders</h2>
+            <Link href="/admin/orders" className="text-[11px] sm:text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
               View All <ChevronRight size={16} />
             </Link>
           </div>
@@ -220,28 +229,25 @@ useEffect(() => {
 
                 return (
                   <div key={order.id} className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all cursor-pointer">
-                    
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 flex items-center justify-center rounded-xl ${status.bg} ${status.color}`}>
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-xl ${status.bg} ${status.color}`}>
                         <StatusIcon size={18} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800 mb-0.5 group-hover:text-emerald-600 transition-colors">
+                        <p className="text-xs sm:text-sm font-bold text-slate-800 mb-0.5 group-hover:text-emerald-600 transition-colors">
                           Order #{order.id.toString().padStart(4, '0')}
                         </p>
-                        <p className="text-xs text-slate-500 font-medium">
+                        <p className="text-[10px] sm:text-xs text-slate-500 font-medium line-clamp-1">
                           {order.first_name ? `${order.first_name} ${order.last_name || ''}` : `Cust ID: ${order.customer}`}
                         </p>
                       </div>
                     </div>
-
                     <div className="text-right">
-                      <p className="text-sm font-black text-slate-800 mb-0.5">${total.toFixed(2)}</p>
-                      <p className={`text-[10px] font-bold uppercase tracking-wider ${status.color}`}>
+                      <p className="text-xs sm:text-sm font-black text-slate-800 mb-0.5">${total.toFixed(2)}</p>
+                      <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${status.color}`}>
                         {status.text}
                       </p>
                     </div>
-
                   </div>
                 );
               })
