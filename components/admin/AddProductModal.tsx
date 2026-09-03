@@ -34,7 +34,6 @@ export default function AddProductModal({ isOpen, onClose, collections, onSucces
   const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // মেমরি লিক রোধ করার জন্য অবজেক্ট URL ক্লিনআপ
   useEffect(() => {
     return () => previews.forEach(url => URL.revokeObjectURL(url));
   }, [previews]);
@@ -60,7 +59,7 @@ export default function AddProductModal({ isOpen, onClose, collections, onSucces
 
     setSelectedFiles(prev => [...prev, ...validFiles]);
     
-    // প্রিভিউ তৈরি করা
+
     const newPreviews = validFiles.map(f => URL.createObjectURL(f));
     setPreviews(prev => [...prev, ...newPreviews]);
     
@@ -81,7 +80,6 @@ export default function AddProductModal({ isOpen, onClose, collections, onSucces
     setIsAdding(true);
 
     try {
-      // 1. প্রথমে প্রোডাক্ট তৈরি করা
       const payload = {
         title: newData.title,
         slug: newData.slug,
@@ -89,13 +87,12 @@ export default function AddProductModal({ isOpen, onClose, collections, onSucces
         unit_price: parseFloat(newData.unit_price),
         inventory: parseInt(newData.inventory),
         collection: parseInt(newData.collection),
-        collection_id: parseInt(newData.collection), // 500 error রোধ করার জন্য ব্যাকআপ ফিল্ড
+        collection_id: parseInt(newData.collection), 
       };
 
       const res = await apiClient.post(`/store/products/`, payload);
       const newProduct = res.data;
 
-      // 2. প্রোডাক্ট সফলভাবে তৈরি হলে সিলেক্ট করা ছবিগুলো আপলোড করা
       const uploadedImages = [];
       if (selectedFiles.length > 0) {
          for (const file of selectedFiles) {
@@ -113,13 +110,11 @@ export default function AddProductModal({ isOpen, onClose, collections, onSucces
          }
       }
 
-      // ফ্রন্টএন্ডে রিয়েল-টাইম দেখানোর জন্য নতুন প্রোডাক্টের সাথে ছবিগুলো জুড়ে দেওয়া
       newProduct.images = uploadedImages;
 
       toast.success("Product and images saved successfully!");
       onSuccess(newProduct);
       
-      // স্টেট রিসেট করা
       setNewData({ title: "", slug: "", description: "", unit_price: "", inventory: "", collection: "" });
       setSelectedFiles([]);
       setPreviews([]);
@@ -130,7 +125,6 @@ export default function AddProductModal({ isOpen, onClose, collections, onSucces
       if (error.response?.status === 500) {
          toast.error("Server Error (500). Please check your Django terminal for details.");
       } else {
-         // ডুপ্লিকেট স্লাগ বা অন্য এরর হলে জ্যাঙ্গোর আসল মেসেজ দেখাবে
          const errorMsg = error.response?.data?.slug?.[0] || error.response?.data?.detail || "Failed to create product.";
          toast.error(errorMsg);
       }
