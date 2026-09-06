@@ -68,54 +68,57 @@ export default function FlashSale({
     : products?.results || products?.data || [];
 
   return (
-    <section className="my-12 bg-card rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden relative border border-card-border group font-sans">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[70%] h-28 bg-primary/5 blur-[90px] pointer-events-none"></div>
+    <section className="my-8 md:my-12 mx-3 sm:mx-0 bg-card rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden relative border border-card-border group font-sans">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[90%] md:w-[70%] h-28 bg-primary/5 blur-[90px] pointer-events-none"></div>
 
-      <div className="px-8 pt-8 pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between text-foreground relative z-10 gap-4">
-        <div className="flex-1 w-full mb-6 sm:mb-0">
-          <div className="flex items-center gap-3 w-full">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
+      {/* Header Section */}
+      <div className="px-4 sm:px-8 pt-5 sm:pt-8 pb-4 sm:pb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between text-foreground relative z-10 gap-3 lg:gap-6">
+        <div className="flex-1 w-full mb-1 lg:mb-0">
+          <div className="flex items-center gap-2 sm:gap-3 w-full">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
               Flash Sale
             </h2>
             <Zap
-              size={28}
-              className="text-green-700/280 fill-green-500/80 shrink-0"
+              size={20}
+              className="text-green-700/80 fill-green-500/80 shrink-0 md:w-7 md:h-7"
             />
           </div>
 
-          <p className="text-slate-500 text-base font-medium mt-2">
+          <p className="text-slate-500 text-[11px] sm:text-base font-medium mt-1 md:mt-2">
             Limited time offers on handpicked premium choices
           </p>
         </div>
 
-        <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
-          <div className="flex items-center gap-3 bg-card-border/30 border border-card-border px-4 py-2 rounded-2xl">
-            <span className="font-bold text-[11px] text-muted uppercase tracking-widest">
+        <div className="flex flex-row items-center gap-2 sm:gap-6 w-full lg:w-auto justify-between lg:justify-end">
+          <div className="flex items-center gap-1.5 sm:gap-3 bg-card-border/30 border border-card-border px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shrink-0">
+            <span className="font-bold text-[9px] sm:text-[11px] text-muted uppercase tracking-widest hidden sm:inline-block">
               Ends in
             </span>
-            <div className="flex items-center gap-1.5 text-foreground font-black text-sm">
-              <div className="bg-card px-2 py-1 rounded-md min-w-[32px] text-center border border-card-border">
+            <span className="font-bold text-[9px] text-muted uppercase tracking-widest sm:hidden">
+              Ends
+            </span>
+            <div className="flex items-center gap-0.5 sm:gap-1.5 text-foreground font-black text-[10px] sm:text-sm">
+              <div className="bg-card px-1 sm:px-2 py-0.5 sm:py-1 rounded sm:rounded-md min-w-[20px] sm:min-w-[32px] text-center border border-card-border">
                 {String(timeLeft.hours).padStart(2, "0")}
               </div>
               <span className="text-primary font-bold">:</span>
-              <div className="bg-card px-2 py-1 rounded-md min-w-[32px] text-center border border-card-border">
+              <div className="bg-card px-1 sm:px-2 py-0.5 sm:py-1 rounded sm:rounded-md min-w-[20px] sm:min-w-[32px] text-center border border-card-border">
                 {String(timeLeft.minutes).padStart(2, "0")}
               </div>
               <span className="text-primary font-bold">:</span>
-              <div className="bg-primary text-white px-2 py-1 rounded-md min-w-[32px] text-center">
+              <div className="bg-primary text-white px-1 sm:px-2 py-0.5 sm:py-1 rounded sm:rounded-md min-w-[20px] sm:min-w-[32px] text-center">
                 {String(timeLeft.seconds).padStart(2, "0")}
               </div>
             </div>
           </div>
 
-          {/* Corrected route to /products */}
           <Link
             href="/products"
-            className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary-hover transition-all group/link"
+            className="flex lg:hidden xl:flex items-center gap-0.5 text-[10px] sm:text-xs font-bold text-primary hover:text-primary-hover transition-all group/link whitespace-nowrap"
           >
-            <span>View All Deals</span>
+            <span>View All</span>
             <svg
-              className="w-4 h-4 transform group-hover/link:translate-x-1 transition-transform"
+              className="w-3 h-3 sm:w-4 sm:h-4 transform group-hover/link:translate-x-1 transition-transform"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -131,10 +134,10 @@ export default function FlashSale({
         </div>
       </div>
 
-      <div className="px-6 sm:px-8 pb-8 pt-2 relative z-10">
+      <div className="px-3 sm:px-8 pb-5 sm:pb-8 pt-1 relative z-10">
         <button
           onClick={() => scroll("left")}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-card/90 backdrop-blur-md border border-card-border rounded-full flex items-center justify-center text-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
+          className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-card/90 backdrop-blur-md border border-card-border rounded-full items-center justify-center text-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
         >
           <svg
             className="w-5 h-5"
@@ -153,7 +156,7 @@ export default function FlashSale({
 
         <div
           ref={scrollRef}
-          className="flex overflow-x-auto gap-5 pb-4 snap-x custom-scrollbar scroll-smooth hide-scroll-bar"
+          className="flex overflow-x-auto gap-3 sm:gap-5 pb-3 sm:pb-4 snap-x snap-mandatory custom-scrollbar scroll-smooth hide-scroll-bar"
         >
           {isLoading
             ? Array(5)
@@ -173,10 +176,11 @@ export default function FlashSale({
                 return (
                   <div
                     key={product.id}
-                    className="group/card relative bg-card rounded-[1.75rem] border border-card-border hover:border-card-hoverBorder shadow-2xs hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full min-w-[220px] max-w-[235px] shrink-0"
+                    // 🟢 Changed width to allow ~2.5 cards on mobile (w-[145px]) while keeping desktop size (sm:min-w-[220px])
+                    className="snap-start group/card relative bg-card rounded-2xl sm:rounded-[1.75rem] border border-card-border hover:border-card-hoverBorder shadow-2xs hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full min-w-[145px] max-w-[145px] sm:min-w-[220px] sm:max-w-[235px] shrink-0"
                   >
-                    <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between z-20">
-                      <span className="bg-badge-red text-white text-[10px] font-black px-2.5 py-1 rounded-full tracking-wider shadow-sm uppercase">
+                    <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 flex items-center justify-between z-20">
+                      <span className="bg-badge-red text-white text-[8px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full tracking-wider shadow-sm uppercase">
                         -50%
                       </span>
                       <button
@@ -188,14 +192,14 @@ export default function FlashSale({
                             addToWishlist(product);
                           }
                         }}
-                        className={`w-7 h-7 rounded-full backdrop-blur-md border border-card-border flex items-center justify-center transition-all shadow-xs cursor-pointer ${
+                        className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full backdrop-blur-md border border-card-border flex items-center justify-center transition-all shadow-xs cursor-pointer ${
                           isWishlisted
                             ? "bg-badge-red text-white border-badge-red"
-                            : "bg-white/90 text-muted hover:text-badge-red hover:scale-110"
+                            : "bg-white/90 text-muted hover:text-badge-red md:hover:scale-110"
                         }`}
                       >
                         <svg
-                          className="w-3.5 h-3.5"
+                          className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"
                           fill={isWishlisted ? "currentColor" : "none"}
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -212,44 +216,41 @@ export default function FlashSale({
 
                     <Link
                       href={`/products/${product.id}`}
-                      className="w-full h-44 bg-[#fafbfc] flex items-center justify-center text-5xl relative overflow-hidden transition-all duration-500 group-hover/card:bg-primary-light/60 block"
+                      // 🟢 Reduced image container height for mobile (h-28)
+                      className="w-full h-28 sm:h-44 bg-[#fafbfc] flex items-center justify-center text-3xl sm:text-5xl relative overflow-hidden transition-all duration-500 md:group-hover/card:bg-primary-light/60 block"
                     >
-                      <span className="transform transition-transform duration-700 group-hover/card:scale-110 group-hover/card:-translate-y-2">
+                      <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">
                         📦
                       </span>
                     </Link>
 
-                    <div className="p-4 flex flex-col flex-grow bg-card z-0">
+                    <div className="p-2.5 sm:p-4 flex flex-col flex-grow bg-card z-0">
                       <Link
                         href={`/products/${product.id}`}
-                        className="block mb-2"
+                        className="block mb-1 sm:mb-2"
                       >
-                        <h3 className="text-xs font-semibold text-foreground line-clamp-2 leading-relaxed tracking-tight group-hover/card:text-primary transition-colors">
+                        <h3 className="text-[10px] sm:text-xs font-semibold text-foreground line-clamp-2 leading-tight sm:leading-relaxed tracking-tight group-hover/card:text-primary transition-colors">
                           {product.title}
                         </h3>
                       </Link>
 
-                      <div className="flex items-center justify-between mb-3.5">
-                        <div className="flex items-center text-yellow-400 text-[10px] gap-0.5">
-                          <span>★</span>
-                          <span>★</span>
-                          <span>★</span>
-                          <span>★</span>
-                          <span>★</span>
+                      <div className="flex items-center justify-between mb-2 sm:mb-3.5">
+                        <div className="flex items-center text-yellow-400 text-[7px] sm:text-[10px] gap-0.5">
+                          <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
                         </div>
-                        <span className="text-[10px] font-medium text-muted tracking-tight">
+                        <span className="text-[8px] sm:text-[10px] font-medium text-muted tracking-tight">
                           {product.inventory > 0
                             ? `${product.inventory * 15} sold`
                             : "Hot Deal"}
                         </span>
                       </div>
 
-                      <div className="mt-auto flex flex-col gap-3 pt-2.5 border-t border-card-border/60">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-base font-extrabold text-primary tracking-tight">
+                      <div className="mt-auto flex flex-col gap-2 sm:gap-3 pt-1.5 sm:pt-2.5 border-t border-card-border/60">
+                        <div className="flex items-baseline gap-1 sm:gap-2">
+                          <span className="text-xs sm:text-base font-extrabold text-primary tracking-tight">
                             {currencySymbol}{currentPrice}
                           </span>
-                          <span className="text-xs text-muted line-through font-normal">
+                          <span className="text-[9px] sm:text-xs text-muted line-through font-normal">
                             {currencySymbol}{originalPrice}
                           </span>
                         </div>
@@ -260,21 +261,21 @@ export default function FlashSale({
                             e.preventDefault();
                             handleAddToCart(product);
                           }}
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 text-center cursor-pointer tracking-wide flex items-center justify-center gap-1.5 ${
+                          className={`w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[9px] sm:text-xs shadow-sm transition-all duration-300 md:hover:scale-[1.02] active:scale-95 text-center cursor-pointer tracking-wide flex items-center justify-center gap-1 sm:gap-1.5 ${
                             isThisAdded
                               ? "bg-emerald-500 text-white"
-                              : "bg-primary text-white hover:bg-primary-hover"
+                              : "bg-primary text-white md:hover:bg-primary-hover"
                           }`}
                         >
                           {isThisAdding ? (
                             <>
-                              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                               Adding...
                             </>
                           ) : isThisAdded ? (
                             <>
                               <svg
-                                className="w-3.5 h-3.5"
+                                className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -286,7 +287,7 @@ export default function FlashSale({
                                   d="M5 13l4 4L19 7"
                                 />
                               </svg>
-                              Product Added!
+                              Added!
                             </>
                           ) : (
                             "Add to Cart"
@@ -301,7 +302,7 @@ export default function FlashSale({
 
         <button
           onClick={() => scroll("right")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-card/90 backdrop-blur-md border border-card-border rounded-full flex items-center justify-center text-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
+          className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-card/90 backdrop-blur-md border border-card-border rounded-full items-center justify-center text-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
         >
           <svg
             className="w-5 h-5"

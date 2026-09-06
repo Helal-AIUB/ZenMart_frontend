@@ -1,4 +1,3 @@
-// frontend/src/components/home/NewArrivals.tsx
 "use client";
 import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -23,16 +22,17 @@ export default function NewArrivals() {
     useWishlistStore();
   const { addToCart } = useCartStore();
 
-  // Fetch Categories/Collections for Tabs
+  // Optimized: Added staleTime to prevent unnecessary re-fetching
   const { data: collections = [] } = useQuery({
     queryKey: ["home_collections"],
     queryFn: async () => {
       const res = await apiClient.get("/store/collections/");
       return res.data.results || res.data;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch Products dynamically based on selected collection
+  // Optimized: Added staleTime for instant tab switching
   const { data: productsData, isLoading } = useQuery({
     queryKey: ["filtered_products", selectedCategory],
     queryFn: async () => {
@@ -43,6 +43,7 @@ export default function NewArrivals() {
       const res = await apiClient.get(endpoint);
       return res.data;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
   const validProducts = Array.isArray(productsData)
@@ -69,20 +70,19 @@ export default function NewArrivals() {
   };
 
   return (
-    <section className="my-14 bg-card rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden relative border border-card-border group font-sans p-8">
-      <div className="absolute top-0 right-1/4 w-[60%] h-28 bg-primary/5 blur-[90px] pointer-events-none"></div>
+    <section className="my-8 md:my-14 mx-3 sm:mx-0 bg-card rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden relative border border-card-border group font-sans p-5 sm:p-8">
+      <div className="absolute top-0 right-1/4 w-[90%] md:w-[60%] h-28 bg-primary/5 blur-[90px] pointer-events-none"></div>
 
-      {/* 🟢 Green Bold Primary Theme Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mb-6 relative z-10 w-full">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 relative z-10 w-full">
         <div className="flex-1 w-full">
-          <div className="flex items-center gap-3 w-full">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
+          <div className="flex items-center gap-2 sm:gap-3 w-full">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
               New Arrivals
             </h2>
-            <PawPrint size={28} className="text-green-500/80 fill-green-500/20 shrink-0" />
+            <PawPrint className="w-5 h-5 md:w-7 md:h-7 text-green-500/80 fill-green-500/20 shrink-0" />
           </div>
           
-          <p className="text-slate-500 text-base font-medium mt-2">
+          <p className="text-slate-500 text-[11px] sm:text-base font-medium mt-1 md:mt-2">
             Explore the latest products just for you
           </p>
         </div>
@@ -93,11 +93,11 @@ export default function NewArrivals() {
               ? "/products"
               : `/collections/${selectedCategory}`
           }
-          className="group flex items-center gap-1.5 text-sm font-bold text-green-700 bg-green-50 px-4 py-2 rounded-full hover:bg-green-600 hover:text-white transition-all duration-300 shrink-0"
+          className="group flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-bold text-green-700 bg-green-50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-green-600 hover:text-white transition-all duration-300 shrink-0"
         >
           <span>View All</span>
           <svg
-            className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+            className="w-3.5 h-3.5 sm:w-4 sm:h-4 transform group-hover:translate-x-1 transition-transform"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -112,11 +112,11 @@ export default function NewArrivals() {
         </Link>
       </div>
 
-      {/* Category Filter Pills / Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 custom-scrollbar hide-scroll-bar relative z-10">
+      {/* Category Filter Pills / Tabs - Made smaller on mobile */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-3 sm:pb-4 mb-4 sm:mb-6 custom-scrollbar hide-scroll-bar relative z-10">
         <button
           onClick={() => setSelectedCategory("all")}
-          className={`px-5 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+          className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all shrink-0 cursor-pointer ${
             selectedCategory === "all"
               ? "bg-primary text-white shadow-md shadow-primary/20"
               : "bg-card-border/40 text-muted hover:text-foreground border border-card-border"
@@ -129,7 +129,7 @@ export default function NewArrivals() {
             <button
               key={col.id}
               onClick={() => setSelectedCategory(col.id)}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all shrink-0 cursor-pointer ${
                 selectedCategory === col.id
                   ? "bg-primary text-white shadow-md shadow-primary/20"
                   : "bg-card-border/40 text-muted hover:text-foreground border border-card-border"
@@ -140,11 +140,10 @@ export default function NewArrivals() {
           ))}
       </div>
 
-      {/* Products Slider / Container */}
       <div className="relative z-10">
         <button
           onClick={() => scroll("left")}
-          className="absolute -left-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-card/90 backdrop-blur-md border border-card-border rounded-full flex items-center justify-center text-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
+          className="hidden md:flex absolute -left-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-card/90 backdrop-blur-md border border-card-border rounded-full items-center justify-center text-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
         >
           <svg
             className="w-5 h-5"
@@ -163,14 +162,14 @@ export default function NewArrivals() {
 
         <div
           ref={scrollRef}
-          className="flex overflow-x-auto gap-5 pb-4 snap-x custom-scrollbar scroll-smooth hide-scroll-bar"
+          className="flex overflow-x-auto gap-3 sm:gap-5 pb-4 snap-x snap-mandatory custom-scrollbar scroll-smooth hide-scroll-bar"
         >
           {isLoading ? (
             Array(5)
               .fill(0)
               .map((_, i) => <ProductSkeleton key={i} />)
           ) : validProducts.length === 0 ? (
-            <div className="w-full text-center py-12 text-muted text-sm">
+            <div className="w-full text-center py-12 text-muted text-xs sm:text-sm">
               No products found in this category.
             </div>
           ) : (
@@ -188,10 +187,9 @@ export default function NewArrivals() {
               return (
                 <div
                   key={product.id}
-                  className="group/card relative bg-card rounded-[1.75rem] border border-card-border hover:border-card-hoverBorder shadow-2xs hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full min-w-[220px] max-w-[235px] shrink-0"
+                  className="snap-start group/card relative bg-card rounded-2xl sm:rounded-[1.75rem] border border-card-border hover:border-card-hoverBorder shadow-2xs hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full min-w-[145px] max-w-[145px] sm:min-w-[220px] sm:max-w-[235px] shrink-0"
                 >
-                  {/* Wishlist Button */}
-                  <div className="absolute top-3.5 right-3.5 z-20">
+                  <div className="absolute top-2.5 sm:top-3.5 right-2.5 sm:right-3.5 z-20">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -201,14 +199,14 @@ export default function NewArrivals() {
                           addToWishlist(product);
                         }
                       }}
-                      className={`w-7 h-7 rounded-full backdrop-blur-md border border-card-border flex items-center justify-center transition-all shadow-xs cursor-pointer ${
+                      className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full backdrop-blur-md border border-card-border flex items-center justify-center transition-all shadow-xs cursor-pointer ${
                         isWishlisted
                           ? "bg-badge-red text-white border-badge-red"
-                          : "bg-white/90 text-muted hover:text-badge-red hover:scale-110"
+                          : "bg-white/90 text-muted hover:text-badge-red md:hover:scale-110"
                       }`}
                     >
                       <svg
-                        className="w-3.5 h-3.5"
+                        className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"
                         fill={isWishlisted ? "currentColor" : "none"}
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -223,48 +221,42 @@ export default function NewArrivals() {
                     </button>
                   </div>
 
-                  {/* Product Image Link */}
                   <Link
                     href={`/products/${product.id}`}
-                    className="w-full h-44 bg-[#fafbfc] flex items-center justify-center text-5xl relative overflow-hidden transition-all duration-500 group-hover/card:bg-primary-light/60 block"
+                    className="w-full h-28 sm:h-44 bg-[#fafbfc] flex items-center justify-center text-3xl sm:text-5xl relative overflow-hidden transition-all duration-500 md:group-hover/card:bg-primary-light/60 block"
                   >
-                    <span className="transform transition-transform duration-700 group-hover/card:scale-110 group-hover/card:-translate-y-2">
+                    <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">
                       📦
                     </span>
                   </Link>
 
-                  {/* Product Details */}
-                  <div className="p-4 flex flex-col flex-grow bg-card z-0">
+                  <div className="p-2.5 sm:p-4 flex flex-col flex-grow bg-card z-0">
                     <Link
                       href={`/products/${product.id}`}
-                      className="block mb-2"
+                      className="block mb-1 sm:mb-2"
                     >
-                      <h3 className="text-xs font-semibold text-foreground line-clamp-2 leading-relaxed tracking-tight group-hover/card:text-primary transition-colors">
+                      <h3 className="text-[10px] sm:text-xs font-semibold text-foreground line-clamp-2 leading-tight sm:leading-relaxed tracking-tight group-hover/card:text-primary transition-colors">
                         {product.title}
                       </h3>
                     </Link>
 
-                    <div className="flex items-center justify-between mb-3.5">
-                      <div className="flex items-center text-yellow-400 text-[10px] gap-0.5">
-                        <span>★</span>
-                        <span>★</span>
-                        <span>★</span>
-                        <span>★</span>
-                        <span>★</span>
+                    <div className="flex items-center justify-between mb-2 sm:mb-3.5">
+                      <div className="flex items-center text-yellow-400 text-[7px] sm:text-[10px] gap-0.5">
+                        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
                       </div>
-                      <span className="text-[10px] font-medium text-muted tracking-tight">
+                      <span className="text-[8px] sm:text-[10px] font-medium text-muted tracking-tight">
                         {product.inventory > 0
                           ? `${product.inventory} left`
                           : "In Stock"}
                       </span>
                     </div>
 
-                    <div className="mt-auto flex flex-col gap-3 pt-2.5 border-t border-card-border/60">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-base font-extrabold text-primary tracking-tight">
+                    <div className="mt-auto flex flex-col gap-2 sm:gap-3 pt-1.5 sm:pt-2.5 border-t border-card-border/60">
+                      <div className="flex items-baseline gap-1 sm:gap-2">
+                        <span className="text-xs sm:text-base font-extrabold text-primary tracking-tight">
                           {currencySymbol}{currentPrice}
                         </span>
-                        <span className="text-xs text-muted line-through font-normal">
+                        <span className="text-[9px] sm:text-xs text-muted line-through font-normal">
                           {currencySymbol}{originalPrice}
                         </span>
                       </div>
@@ -275,21 +267,21 @@ export default function NewArrivals() {
                           e.preventDefault();
                           handleAddToCart(product);
                         }}
-                        className={`w-full py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 text-center cursor-pointer tracking-wide flex items-center justify-center gap-1.5 ${
+                        className={`w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[9px] sm:text-xs shadow-sm transition-all duration-300 md:hover:scale-[1.02] active:scale-95 text-center cursor-pointer tracking-wide flex items-center justify-center gap-1 sm:gap-1.5 ${
                           isThisAdded
                             ? "bg-emerald-500 text-white"
-                            : "bg-primary text-white hover:bg-primary-hover"
+                            : "bg-primary text-white md:hover:bg-primary-hover"
                         }`}
                       >
                         {isThisAdding ? (
                           <>
-                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             Adding...
                           </>
                         ) : isThisAdded ? (
                           <>
                             <svg
-                              className="w-3.5 h-3.5"
+                              className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -301,7 +293,7 @@ export default function NewArrivals() {
                                 d="M5 13l4 4L19 7"
                               />
                             </svg>
-                            Product Added!
+                            Added!
                           </>
                         ) : (
                           "Add to Cart"
@@ -317,7 +309,7 @@ export default function NewArrivals() {
 
         <button
           onClick={() => scroll("right")}
-          className="absolute -right-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-card/90 backdrop-blur-md border border-card-border rounded-full flex items-center justify-center text-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
+          className="hidden md:flex absolute -right-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-card/90 backdrop-blur-md border border-card-border rounded-full items-center justify-center text-foreground hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 z-20 opacity-0 group-hover:opacity-100 shadow-xl cursor-pointer"
         >
           <svg
             className="w-5 h-5"
