@@ -276,10 +276,20 @@ export default function AdminProductsPage() {
                         <td className="px-6 py-4 font-bold text-slate-500">#{product.id}</td>
                         <td className="px-6 py-4">
                           {product.images && product.images.length > 0 ? (
-                            <img src={product.images[0].image.startsWith("http") ? product.images[0].image : `http://localhost:8000${product.images[0].image}`} alt={product.title} className="w-10 h-10 rounded-xl object-cover border border-slate-200 bg-white shadow-sm" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-300"><ImagePlus size={16} /></div>
-                          )}
+  <img 
+    src={
+      product.images[0].image.startsWith("http") 
+        ? product.images[0].image 
+        : `${process.env.NEXT_PUBLIC_API_URL || 'https://zenmart-backend.onrender.com'}${product.images[0].image}`
+    } 
+    alt={product.title} 
+    className="w-10 h-10 rounded-xl object-cover border border-slate-200 bg-white shadow-sm" 
+  />
+) : (
+  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-300">
+    <ImagePlus size={16} />
+  </div>
+)}
                         </td>
                         <td className="px-6 py-4 font-bold text-slate-800">{product.title}</td>
                         <td className="px-6 py-4 font-black text-slate-700">${product.unit_price}</td>
