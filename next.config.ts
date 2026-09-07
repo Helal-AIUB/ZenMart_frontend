@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "127.0.0.1",
       },
+      // 🟢 Added Cloudinary for permanent image hosting & production display
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
       // add real domain when moved production
       // {
       //   protocol: "https",

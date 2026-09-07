@@ -16,7 +16,6 @@ export default function ProductsPage() {
   const { addToWishlist, wishlistItems, removeFromWishlist } = useWishlistStore();
   const { addToCart } = useCartStore();
 
-  // Optimized: Added staleTime (5 mins) for instant page loads during navigation
   const { data, isLoading } = useQuery({
     queryKey: ['all_products_page', page],
     queryFn: async () => {
@@ -60,7 +59,6 @@ export default function ProductsPage() {
         {/* </span> */}
       </div>
 
-      {/* Product Grid: 2 cols on mobile, 3 on tablet, 4-5 on desktop */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5 md:gap-6">
         {products.map((product: any) => {
           const currentPrice = Math.round(Number(product.unit_price));
@@ -74,7 +72,6 @@ export default function ProductsPage() {
               key={product.id} 
               className="group/card relative bg-card rounded-2xl sm:rounded-[1.75rem] border border-card-border hover:border-card-hoverBorder shadow-2xs hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full"
             >
-              {/* Badge & Wishlist */}
               <div className="absolute top-2.5 sm:top-3.5 left-2.5 sm:left-3.5 right-2.5 sm:right-3.5 flex items-center justify-between z-20">
                 <span className="bg-badge-red text-white text-[9px] sm:text-[10px] font-black px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full tracking-wider shadow-sm uppercase">
                   -35%
@@ -98,12 +95,19 @@ export default function ProductsPage() {
                 </button>
               </div>
 
-              {/* Product Image Area */}
+              {/* 🟢 Fixed: Replaced Hardcoded Emoji with Dynamic Product Image */}
               <Link href={`/products/${product.id}`} className="w-full h-28 sm:h-44 bg-[#fafbfc] flex items-center justify-center text-4xl sm:text-5xl relative overflow-hidden transition-all duration-500 md:group-hover/card:bg-primary-light/60 block">
-                <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">📦</span>
+                {product.images && product.images.length > 0 ? (
+                  <img 
+                    src={product.images[0].image} 
+                    alt={product.title} 
+                    className="w-full h-full object-cover transform transition-transform duration-700 md:group-hover/card:scale-110" 
+                  />
+                ) : (
+                  <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">📦</span>
+                )}
               </Link>
 
-              {/* Product Info */}
               <div className="p-3 sm:p-4 flex flex-col flex-grow bg-card z-0">
                 <Link href={`/products/${product.id}`} className="block mb-1.5 sm:mb-2">
                   <h3 className="text-[11px] sm:text-xs font-semibold text-foreground line-clamp-2 leading-tight sm:leading-relaxed tracking-tight group-hover/card:text-primary transition-colors">
@@ -163,7 +167,6 @@ export default function ProductsPage() {
         })}
       </div>
 
-      {/* Pagination Controls */}
       <div className="flex items-center justify-center gap-2 sm:gap-3 mt-8 sm:mt-12">
         <button
           onClick={() => setPage((prev) => Math.max(prev - 1, 1))}

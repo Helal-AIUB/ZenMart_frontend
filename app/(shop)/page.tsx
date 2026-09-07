@@ -1,4 +1,3 @@
-// frontend/app/page.tsx
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/apiClient';
@@ -14,6 +13,9 @@ export default function Home() {
   const { data: products, isLoading: loadingProducts } = useQuery<Product[]>({
     queryKey: ['products'],
     queryFn: () => apiClient.get('store/products/').then((res) => res.data),
+    // 🟢 Magic of SWR (Stale-While-Revalidate)
+    staleTime: 10 * 60 * 1000,       // 10 minutes instant cache (No loading spinner)
+    refetchInterval: 10 * 60 * 1000, // Auto-update in the background every 10 minutes
   });
 
   return (

@@ -75,10 +75,10 @@ export default function ProductDetailsClient({ productId }: { productId: string 
   };
 
   // 🟢 Optimized: Added staleTime for instant loading from cache
-  const {
+ const {
     data: product,
     isLoading: loadingProduct,
-    error,
+    error
   } = useQuery<Product | any>({
     queryKey: ["product", productId],
     queryFn: () =>

@@ -176,7 +176,6 @@ export default function FlashSale({
                 return (
                   <div
                     key={product.id}
-                    // 🟢 Changed width to allow ~2.5 cards on mobile (w-[145px]) while keeping desktop size (sm:min-w-[220px])
                     className="snap-start group/card relative bg-card rounded-2xl sm:rounded-[1.75rem] border border-card-border hover:border-card-hoverBorder shadow-2xs hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full min-w-[145px] max-w-[145px] sm:min-w-[220px] sm:max-w-[235px] shrink-0"
                   >
                     <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 flex items-center justify-between z-20">
@@ -216,12 +215,20 @@ export default function FlashSale({
 
                     <Link
                       href={`/products/${product.id}`}
-                      // 🟢 Reduced image container height for mobile (h-28)
                       className="w-full h-28 sm:h-44 bg-[#fafbfc] flex items-center justify-center text-3xl sm:text-5xl relative overflow-hidden transition-all duration-500 md:group-hover/card:bg-primary-light/60 block"
                     >
-                      <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">
-                        📦
-                      </span>
+                      {/* 🟢 Dynamic Image Rendering Fix */}
+                      {product.images && product.images.length > 0 ? (
+                        <img 
+                          src={product.images[0].image} 
+                          alt={product.title} 
+                          className="w-full h-full object-cover transform transition-transform duration-700 md:group-hover/card:scale-110" 
+                        />
+                      ) : (
+                        <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">
+                          📦
+                        </span>
+                      )}
                     </Link>
 
                     <div className="p-2.5 sm:p-4 flex flex-col flex-grow bg-card z-0">

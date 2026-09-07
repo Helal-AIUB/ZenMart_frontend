@@ -22,17 +22,18 @@ export default function NewArrivals() {
     useWishlistStore();
   const { addToCart } = useCartStore();
 
-  // Optimized: Added staleTime to prevent unnecessary re-fetching
+  // 🟢 Optimized: 10 minutes instant cache + 10 minutes background auto-update
   const { data: collections = [] } = useQuery({
     queryKey: ["home_collections"],
     queryFn: async () => {
       const res = await apiClient.get("/store/collections/");
       return res.data.results || res.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    refetchInterval: 10 * 60 * 1000,
   });
 
-  // Optimized: Added staleTime for instant tab switching
+  // 🟢 Optimized: 10 minutes instant cache + 10 minutes background auto-update
   const { data: productsData, isLoading } = useQuery({
     queryKey: ["filtered_products", selectedCategory],
     queryFn: async () => {
@@ -43,7 +44,8 @@ export default function NewArrivals() {
       const res = await apiClient.get(endpoint);
       return res.data;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    refetchInterval: 10 * 60 * 1000,
   });
 
   const validProducts = Array.isArray(productsData)
@@ -112,7 +114,7 @@ export default function NewArrivals() {
         </Link>
       </div>
 
-      {/* Category Filter Pills / Tabs - Made smaller on mobile */}
+      {/* Category Filter Pills / Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-3 sm:pb-4 mb-4 sm:mb-6 custom-scrollbar hide-scroll-bar relative z-10">
         <button
           onClick={() => setSelectedCategory("all")}
@@ -225,9 +227,18 @@ export default function NewArrivals() {
                     href={`/products/${product.id}`}
                     className="w-full h-28 sm:h-44 bg-[#fafbfc] flex items-center justify-center text-3xl sm:text-5xl relative overflow-hidden transition-all duration-500 md:group-hover/card:bg-primary-light/60 block"
                   >
-                    <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">
-                      📦
-                    </span>
+                    {/* 🟢 Fixed: Replaced Hardcoded Emoji with Dynamic Product Image */}
+                    {product.images && product.images.length > 0 ? (
+                      <img 
+                        src={product.images[0].image} 
+                        alt={product.title} 
+                        className="w-full h-full object-cover transform transition-transform duration-700 md:group-hover/card:scale-110" 
+                      />
+                    ) : (
+                      <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">
+                        📦
+                      </span>
+                    )}
                   </Link>
 
                   <div className="p-2.5 sm:p-4 flex flex-col flex-grow bg-card z-0">
