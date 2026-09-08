@@ -12,7 +12,6 @@ import Link from "next/link";
 
 export default function ProductDetailsClient({ productId }: { productId: string }) {
   const [quantity, setQuantity] = useState(1);
-  const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const { currencySymbol } = useStoreSettings();
   
@@ -37,30 +36,32 @@ export default function ProductDetailsClient({ productId }: { productId: string 
     }
   };
 
-  const handleAddToCart = async () => {
-    if (!product) return;
-    setIsAdding(true);
+  const handleAddToCart = () => {
+    if (!product || product.inventory === 0) return;
 
-    try {
-      await addToCart(Number(productId), quantity);
+    // Instant UI Update (Optimistic)
+    setIsAdded(true);
+    
+    // Instant Toast Notification
+    toast.success(`${quantity}x ${product.title} added to cart`, {
+      style: {
+        borderRadius: "12px",
+        background: "var(--foreground)",
+        color: "var(--card-bg)",
+        fontSize: "13px",
+        fontWeight: "500",
+      },
+      iconTheme: { primary: "var(--primary)", secondary: "var(--card-bg)" },
+    });
 
-      setIsAdded(true);
-      setTimeout(() => {
-        setIsAdded(false);
-        setQuantity(1);
-      }, 2000);
+    // Reset button state after 2 seconds
+    setTimeout(() => {
+      setIsAdded(false);
+      setQuantity(1);
+    }, 2000);
 
-      toast.success(`${quantity}x ${product.title} added to cart`, {
-        style: {
-          borderRadius: "12px",
-          background: "var(--foreground)",
-          color: "var(--card-bg)",
-          fontSize: "13px",
-          fontWeight: "500",
-        },
-        iconTheme: { primary: "var(--primary)", secondary: "var(--card-bg)" },
-      });
-    } catch (error) {
+    // Background API Call (Non-blocking)
+    addToCart(product, quantity).catch(() => {
       toast.error("Something went wrong! Please try again.", {
         style: {
           fontSize: "13px",
@@ -69,13 +70,11 @@ export default function ProductDetailsClient({ productId }: { productId: string 
           color: "var(--foreground)",
         },
       });
-    } finally {
-      setIsAdding(false);
-    }
+    });
   };
 
-  // 🟢 Optimized: Added staleTime for instant loading from cache
- const {
+  // Cached Query for Instant Load
+  const {
     data: product,
     isLoading: loadingProduct,
     error
@@ -83,10 +82,10 @@ export default function ProductDetailsClient({ productId }: { productId: string 
     queryKey: ["product", productId],
     queryFn: () =>
       apiClient.get(`/store/products/${productId}/`).then((res) => res.data),
-    staleTime: 5 * 60 * 1000, 
+    staleTime: 10 * 60 * 1000, 
   });
 
-  // 🟢 Optimized: Added staleTime for related products
+  // Cached Query for Related Products
   const { data: relatedProducts, isLoading: loadingRelated } = useQuery<Product[]>({
     queryKey: ["related_products", product?.collection],
     queryFn: () =>
@@ -102,7 +101,7 @@ export default function ProductDetailsClient({ productId }: { productId: string 
           return [];
         }),
     enabled: !!product?.collection,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
   });
 
   const similarItems = Array.isArray(relatedProducts)
@@ -123,7 +122,7 @@ export default function ProductDetailsClient({ productId }: { productId: string 
     }
   };
 
-  if (loadingProduct)
+  if (loadingProduct && !product)
     return (
       <div className="min-h-[60vh] flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-3">
@@ -180,7 +179,8 @@ export default function ProductDetailsClient({ productId }: { productId: string 
                 </span>
 
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     if (isWishlisted) {
                       removeFromWishlist(product.id);
                     } else {
@@ -208,7 +208,6 @@ export default function ProductDetailsClient({ productId }: { productId: string 
                   </svg>
                 </button>
 
-                {/* Main Product Image */}
                 {product.images && product.images.length > 0 ? (
                   <img
                     src={product.images[activeImageIndex].image}
@@ -221,7 +220,6 @@ export default function ProductDetailsClient({ productId }: { productId: string 
                   </span>
                 )}
 
-                {/* Prev & Next Buttons */}
                 {product.images && product.images.length > 1 && (
                   <>
                     <button 
@@ -240,7 +238,6 @@ export default function ProductDetailsClient({ productId }: { productId: string 
                 )}
               </div>
 
-              {/* Dynamic Image Thumbnails */}
               <div className="grid grid-cols-4 gap-2 md:gap-3">
                 {product.images && product.images.length > 0 ? (
                   product.images.map((imgObj: any, index: number) => (
@@ -354,7 +351,6 @@ export default function ProductDetailsClient({ productId }: { productId: string 
 
           </div>
 
-          {/* Similar Products Section */}
           <div className="bg-card rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-card-border p-5 sm:p-6 md:p-8">
             <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 md:pb-4 border-b border-card-border">
               <h3 className="text-sm md:text-base font-black text-foreground uppercase tracking-wider">
@@ -370,7 +366,7 @@ export default function ProductDetailsClient({ productId }: { productId: string 
               )}
             </div>
 
-            {loadingRelated ? (
+            {loadingRelated && similarItems.length === 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 {Array(4).fill(0).map((_, i) => (
                   <div key={i} className="flex flex-col gap-2 md:gap-3 animate-pulse p-2.5 sm:p-4 bg-gray-50 rounded-2xl">
@@ -381,7 +377,6 @@ export default function ProductDetailsClient({ productId }: { productId: string 
                 ))}
               </div>
             ) : similarItems && similarItems.length > 0 ? (
-              // 🟢 Grid optimized: 2 columns on mobile, 4 on desktop
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 {similarItems.map((item) => {
                   const itemPrice = Math.round(Number(item.unit_price));
@@ -392,7 +387,6 @@ export default function ProductDetailsClient({ productId }: { productId: string 
                       key={item.id}
                       className="flex flex-col gap-2 sm:gap-3 p-2.5 sm:p-4 rounded-2xl bg-[#f8f9fa] hover:bg-primary-light/40 border border-card-border transition-all group"
                     >
-                      {/* Image smaller on mobile */}
                       <div className="w-full h-24 sm:h-32 bg-white rounded-xl flex items-center justify-center text-2xl sm:text-3xl group-hover:scale-105 transition-transform border border-card-border overflow-hidden">
                         {item.images && item.images.length > 0 ? (
                            <img src={item.images[0].image} alt={item.title} className="w-full h-full object-cover" />
@@ -444,7 +438,7 @@ export default function ProductDetailsClient({ productId }: { productId: string 
               <div className="flex items-center justify-between bg-[#f8f9fa] border border-card-border rounded-[1rem] md:rounded-2xl p-1 shadow-2xs">
                 <button
                   onClick={handleDecrement}
-                  disabled={quantity <= 1 || isAdding}
+                  disabled={quantity <= 1 || isAdded}
                   className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-lg md:rounded-xl text-base md:text-lg font-bold text-foreground hover:bg-white hover:shadow-xs disabled:opacity-40 transition-all cursor-pointer"
                 >
                   −
@@ -457,7 +451,7 @@ export default function ProductDetailsClient({ productId }: { productId: string 
                   disabled={
                     product.inventory === 0 ||
                     quantity >= product.inventory ||
-                    isAdding
+                    isAdded
                   }
                   className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-lg md:rounded-xl text-base md:text-lg font-bold text-foreground hover:bg-white hover:shadow-xs disabled:opacity-40 transition-all cursor-pointer"
                 >
@@ -477,22 +471,17 @@ export default function ProductDetailsClient({ productId }: { productId: string 
 
             <div className="flex flex-col gap-2.5 md:gap-3">
               <button
-                disabled={product.inventory === 0 || isAdding || isAdded}
+                disabled={product.inventory === 0 || isAdded}
                 onClick={handleAddToCart}
                 className={`w-full py-3 md:py-3.5 rounded-xl md:rounded-2xl font-black text-[11px] md:text-xs tracking-wide transition-all duration-300 shadow-md flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer ${
                   isAdded
                     ? "bg-emerald-500 text-white shadow-emerald-500/30"
-                    : product.inventory > 0 && !isAdding
+                    : product.inventory > 0
                     ? "bg-primary text-white hover:bg-primary-hover hover:shadow-lg hover:-translate-y-0.5"
                     : "bg-primary-light text-primary cursor-not-allowed shadow-none"
                 }`}
               >
-                {isAdding ? (
-                  <>
-                    <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Adding...
-                  </>
-                ) : isAdded ? (
+                {isAdded ? (
                   <>
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />

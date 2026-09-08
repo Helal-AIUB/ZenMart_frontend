@@ -5,7 +5,7 @@ import ProductSkeleton from "../ui/ProductSkeleton";
 import Link from "next/link";
 import { useStoreSettings } from "@/store/useStoreSettings";
 import { useWishlistStore } from "@/store/useWishlistStore";
-import { useCartStore } from "@/store/useCartStore";
+import AddToCartButton from "@/components/ui/AddToCartButton";
 
 export default function FlashSale({
   products,
@@ -20,13 +20,10 @@ export default function FlashSale({
     minutes: 45,
     seconds: 30,
   });
-  const [addingId, setAddingId] = useState<number | null>(null);
-  const [addedId, setAddedId] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { addToWishlist, wishlistItems, removeFromWishlist } =
     useWishlistStore();
-  const { addToCart } = useCartStore();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -41,20 +38,6 @@ export default function FlashSale({
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const handleAddToCart = async (product: any) => {
-    setAddingId(product.id);
-    try {
-      await addToCart(product.id, 1);
-      setAddingId(null);
-      setAddedId(product.id);
-      setTimeout(() => {
-        setAddedId(null);
-      }, 2000);
-    } catch (error) {
-      setAddingId(null);
-    }
-  };
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -158,7 +141,7 @@ export default function FlashSale({
           ref={scrollRef}
           className="flex overflow-x-auto gap-3 sm:gap-5 pb-3 sm:pb-4 snap-x snap-mandatory custom-scrollbar scroll-smooth hide-scroll-bar"
         >
-          {isLoading
+          {isLoading && validProducts.length === 0
             ? Array(5)
                 .fill(0)
                 .map((_, i) => <ProductSkeleton key={i} />)
@@ -170,8 +153,6 @@ export default function FlashSale({
                 const isWishlisted = wishlistItems.some(
                   (item: any) => item.id === product.id,
                 );
-                const isThisAdding = addingId === product.id;
-                const isThisAdded = addedId === product.id;
 
                 return (
                   <div
@@ -217,12 +198,11 @@ export default function FlashSale({
                       href={`/products/${product.id}`}
                       className="w-full h-28 sm:h-44 bg-[#fafbfc] flex items-center justify-center text-3xl sm:text-5xl relative overflow-hidden transition-all duration-500 md:group-hover/card:bg-primary-light/60 block"
                     >
-                      {/* 🟢 Dynamic Image Rendering Fix */}
                       {product.images && product.images.length > 0 ? (
-                        <img 
-                          src={product.images[0].image} 
-                          alt={product.title} 
-                          className="w-full h-full object-cover transform transition-transform duration-700 md:group-hover/card:scale-110" 
+                        <img
+                          src={product.images[0].image}
+                          alt={product.title}
+                          className="w-full h-full object-cover transform transition-transform duration-700 md:group-hover/card:scale-110"
                         />
                       ) : (
                         <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">
@@ -243,7 +223,11 @@ export default function FlashSale({
 
                       <div className="flex items-center justify-between mb-2 sm:mb-3.5">
                         <div className="flex items-center text-yellow-400 text-[7px] sm:text-[10px] gap-0.5">
-                          <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                          <span>★</span>
+                          <span>★</span>
+                          <span>★</span>
+                          <span>★</span>
+                          <span>★</span>
                         </div>
                         <span className="text-[8px] sm:text-[10px] font-medium text-muted tracking-tight">
                           {product.inventory > 0
@@ -255,51 +239,20 @@ export default function FlashSale({
                       <div className="mt-auto flex flex-col gap-2 sm:gap-3 pt-1.5 sm:pt-2.5 border-t border-card-border/60">
                         <div className="flex items-baseline gap-1 sm:gap-2">
                           <span className="text-xs sm:text-base font-extrabold text-primary tracking-tight">
-                            {currencySymbol}{currentPrice}
+                            {currencySymbol}
+                            {currentPrice}
                           </span>
                           <span className="text-[9px] sm:text-xs text-muted line-through font-normal">
-                            {currencySymbol}{originalPrice}
+                            {currencySymbol}
+                            {originalPrice}
                           </span>
                         </div>
 
-                        <button
-                          disabled={isThisAdding || isThisAdded}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleAddToCart(product);
-                          }}
-                          className={`w-full py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[9px] sm:text-xs shadow-sm transition-all duration-300 md:hover:scale-[1.02] active:scale-95 text-center cursor-pointer tracking-wide flex items-center justify-center gap-1 sm:gap-1.5 ${
-                            isThisAdded
-                              ? "bg-emerald-500 text-white"
-                              : "bg-primary text-white md:hover:bg-primary-hover"
-                          }`}
-                        >
-                          {isThisAdding ? (
-                            <>
-                              <div className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              Adding...
-                            </>
-                          ) : isThisAdded ? (
-                            <>
-                              <svg
-                                className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={3}
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                              Added!
-                            </>
-                          ) : (
-                            "Add to Cart"
-                          )}
-                        </button>
+                        {/* 🟢 Reusable Component with explicit responsive overrides */}
+                        <AddToCartButton
+                          product={product}
+                          className="!py-1.5 sm:!py-2.5 !text-[9px] sm:!text-xs"
+                        />
                       </div>
                     </div>
                   </div>
