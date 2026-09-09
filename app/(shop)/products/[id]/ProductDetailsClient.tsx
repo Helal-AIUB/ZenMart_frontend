@@ -1,16 +1,20 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/services/apiClient";
-import { Product } from "@/types/product";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useStoreSettings } from "@/store/useStoreSettings";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import Link from "next/link";
+import AddToCartButton from "@/components/ui/AddToCartButton";
 
-export default function ProductDetailsClient({ productId }: { productId: string }) {
+export default function ProductDetailsClient({ 
+  product, 
+  relatedProducts 
+}: { 
+  product: any;
+  relatedProducts: any[];
+}) {
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const { currencySymbol } = useStoreSettings();
@@ -20,121 +24,7 @@ export default function ProductDetailsClient({ productId }: { productId: string 
   const { addToCart } = useCartStore();
   const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlistStore();
 
-  const isWishlisted = wishlistItems.some(
-    (item: any) => String(item.id) === String(productId)
-  );
-
-  const handleIncrement = () => {
-    if (product && quantity < product.inventory) {
-      setQuantity((prev) => prev + 1);
-    }
-  };
-
-  const handleDecrement = () => {
-    if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
-    }
-  };
-
-  const handleAddToCart = () => {
-    if (!product || product.inventory === 0) return;
-
-    // Instant UI Update (Optimistic)
-    setIsAdded(true);
-    
-    // Instant Toast Notification
-    toast.success(`${quantity}x ${product.title} added to cart`, {
-      style: {
-        borderRadius: "12px",
-        background: "var(--foreground)",
-        color: "var(--card-bg)",
-        fontSize: "13px",
-        fontWeight: "500",
-      },
-      iconTheme: { primary: "var(--primary)", secondary: "var(--card-bg)" },
-    });
-
-    // Reset button state after 2 seconds
-    setTimeout(() => {
-      setIsAdded(false);
-      setQuantity(1);
-    }, 2000);
-
-    // Background API Call (Non-blocking)
-    addToCart(product, quantity).catch(() => {
-      toast.error("Something went wrong! Please try again.", {
-        style: {
-          fontSize: "13px",
-          borderRadius: "12px",
-          background: "var(--card-bg)",
-          color: "var(--foreground)",
-        },
-      });
-    });
-  };
-
-  // Cached Query for Instant Load
-  const {
-    data: product,
-    isLoading: loadingProduct,
-    error
-  } = useQuery<Product | any>({
-    queryKey: ["product", productId],
-    queryFn: () =>
-      apiClient.get(`/store/products/${productId}/`).then((res) => res.data),
-    staleTime: 10 * 60 * 1000, 
-  });
-
-  // Cached Query for Related Products
-  const { data: relatedProducts, isLoading: loadingRelated } = useQuery<Product[]>({
-    queryKey: ["related_products", product?.collection],
-    queryFn: () =>
-      apiClient
-        .get(`/store/products/?collection_id=${product?.collection}`)
-        .then((res) => {
-          if (res.data && res.data.results) {
-            return res.data.results;
-          }
-          if (Array.isArray(res.data)) {
-            return res.data;
-          }
-          return [];
-        }),
-    enabled: !!product?.collection,
-    staleTime: 10 * 60 * 1000,
-  });
-
-  const similarItems = Array.isArray(relatedProducts)
-    ? relatedProducts.filter((p: Product) => String(p.id) !== String(productId)).slice(0, 4)
-    : [];
-
-  const handleNextImage = () => {
-    if (product?.images && product.images.length > 0) {
-      setActiveImageIndex((prev) => (prev + 1) % product.images.length);
-    }
-  };
-
-  const handlePrevImage = () => {
-    if (product?.images && product.images.length > 0) {
-      setActiveImageIndex((prev) =>
-        prev === 0 ? product.images.length - 1 : prev - 1
-      );
-    }
-  };
-
-  if (loadingProduct && !product)
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center font-sans">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 md:w-10 md:h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xs md:text-sm text-muted font-medium tracking-wide">
-            Loading product details...
-          </p>
-        </div>
-      </div>
-    );
-
-  if (error || !product)
+  if (!product) {
     return (
       <div className="max-w-[1440px] mx-auto px-4 py-20 text-center font-sans">
         <div className="bg-card border border-card-border p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm max-w-md mx-auto">
@@ -150,6 +40,74 @@ export default function ProductDetailsClient({ productId }: { productId: string 
         </div>
       </div>
     );
+  }
+
+  const isWishlisted = wishlistItems.some(
+    (item: any) => String(item.id) === String(product.id)
+  );
+
+  const handleIncrement = () => {
+    if (quantity < product.inventory) {
+      setQuantity((prev) => prev + 1);
+    }
+  };
+
+  const handleDecrement = () => {
+    if (quantity > 1) {
+      setQuantity((prev) => prev - 1);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (product.inventory === 0) return;
+
+    setIsAdded(true);
+    
+    toast.success(`${quantity}x ${product.title} added to cart`, {
+      style: {
+        borderRadius: "12px",
+        background: "var(--foreground)",
+        color: "var(--card-bg)",
+        fontSize: "13px",
+        fontWeight: "500",
+      },
+      iconTheme: { primary: "var(--primary)", secondary: "var(--card-bg)" },
+    });
+
+    setTimeout(() => {
+      setIsAdded(false);
+      setQuantity(1);
+    }, 2000);
+
+    addToCart(product, quantity).catch(() => {
+      toast.error("Something went wrong! Please try again.", {
+        style: {
+          fontSize: "13px",
+          borderRadius: "12px",
+          background: "var(--card-bg)",
+          color: "var(--foreground)",
+        },
+      });
+    });
+  };
+
+  const similarItems = Array.isArray(relatedProducts)
+    ? relatedProducts.filter((p: any) => String(p.id) !== String(product.id)).slice(0, 4)
+    : [];
+
+  const handleNextImage = () => {
+    if (product?.images && product.images.length > 0) {
+      setActiveImageIndex((prev) => (prev + 1) % product.images.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (product?.images && product.images.length > 0) {
+      setActiveImageIndex((prev) =>
+        prev === 0 ? product.images.length - 1 : prev - 1
+      );
+    }
+  };
 
   const currentPrice = Math.round(Number(product.unit_price));
   const originalPrice = Math.round(Number(product.unit_price) * 1.35);
@@ -366,19 +324,9 @@ export default function ProductDetailsClient({ productId }: { productId: string 
               )}
             </div>
 
-            {loadingRelated && similarItems.length === 0 ? (
+            {similarItems && similarItems.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                {Array(4).fill(0).map((_, i) => (
-                  <div key={i} className="flex flex-col gap-2 md:gap-3 animate-pulse p-2.5 sm:p-4 bg-gray-50 rounded-2xl">
-                    <div className="h-24 sm:h-32 bg-card-border/40 rounded-xl"></div>
-                    <div className="h-2 sm:h-3 bg-card-border/40 rounded w-full"></div>
-                    <div className="h-2 sm:h-3 bg-card-border/40 rounded w-1/2"></div>
-                  </div>
-                ))}
-              </div>
-            ) : similarItems && similarItems.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                {similarItems.map((item) => {
+                {similarItems.map((item: any) => {
                   const itemPrice = Math.round(Number(item.unit_price));
                   const itemOriginal = Math.round(itemPrice * 1.35);
                   return (
