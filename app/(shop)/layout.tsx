@@ -1,5 +1,5 @@
 import ReactQueryProvider from '@/providers/ReactQueryProvider';
-import Navbar from '@/components/Navbar';
+import NavbarWrapper from '@/components/NavbarWrapper';
 import Footer from '@/components/Footer';
 import CartDrawer from "@/components/CartDrawer";
 import '../globals.css';
@@ -11,7 +11,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <div>
         <Toaster/>
         <ReactQueryProvider>
-          <Navbar />
+          {/* <Navbar /> */}
+          <NavbarWrapper/>
           <CartDrawer />
           {children}
           <Footer />

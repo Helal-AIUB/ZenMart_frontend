@@ -10,7 +10,13 @@ import { apiClient } from "@/services/apiClient";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import WishlistDrawer from "@/components/WishlistDrawer";
 
-export default function Navbar() {
+export default function Navbar({ 
+  initialCategories = [], 
+  initialSettings = {} 
+}: { 
+  initialCategories?: any[]; 
+  initialSettings?: any;
+}) {
   const router = useRouter();
   const { openCart, cartItems, cartId, fetchCart } = useCartStore();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -25,30 +31,12 @@ export default function Navbar() {
   const { wishlistItems, openWishlist } = useWishlistStore();
   const wishlistCount = wishlistItems.length;
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const res = await apiClient.get("/store/collections/");
-      return res.data.results || res.data;
-    },
-    staleTime: 5 * 60 * 1000,
-  });
+  // 🟢 Data comes directly from Server (ISR), so no loading state is needed
+  const safeCategories = Array.isArray(initialCategories) ? initialCategories : [];
+  const storeName = initialSettings?.store_name || "Petora BD";
 
-  const { data: settingsData } = useQuery({
-    queryKey: ["store_settings"],
-    queryFn: async () => {
-      const res = await apiClient.get("/store/settings/");
-      return res.data;
-    },
-    staleTime: 60 * 60 * 1000, 
-  });
-
-  const settings = Array.isArray(settingsData) 
-    ? settingsData[0] 
-    : settingsData?.results?.[0] || settingsData || {};
-  const storeName = settings.store_name || "Petora BD";
-
-  const { data: user, refetch: refetchUser } = useQuery({
+  // User auth remains Client-side because it depends on the browser's local token
+  const { data: user } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
       try {
@@ -92,10 +80,8 @@ export default function Navbar() {
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
 
-      document.cookie =
-        "access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie =
-        "refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "access=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
       window.location.href = "/signin";
     }
@@ -119,10 +105,7 @@ export default function Navbar() {
     }
   };
 
-  const totalItems =
-    cartItems?.reduce((total: number, item: any) => total + item.quantity, 0) ||
-    0;
-  const safeCategories = Array.isArray(categories) ? categories : [];
+  const totalItems = cartItems?.reduce((total: number, item: any) => total + item.quantity, 0) || 0;
 
   return (
     <>
@@ -133,10 +116,8 @@ export default function Navbar() {
       >
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-3 lg:gap-4">
           
-          {/* Top Row: Applied flex-wrap for mobile, kept flex-nowrap for desktop */}
           <div className="flex flex-wrap lg:flex-nowrap justify-between items-center gap-y-3 gap-x-4 lg:gap-6">
             
-            {/* Logo: Order 1 on mobile, original position on desktop */}
             <Link href="/" className="flex items-center gap-1 shrink-0 group order-1 lg:order-none">
               <span className="text-2xl lg:text-3xl font-black text-primary tracking-tight group-hover:scale-105 transition-transform duration-300">
                 {storeName}
@@ -144,7 +125,6 @@ export default function Navbar() {
               <span className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-yellow-400 mt-1 lg:mt-2 animate-pulse"></span>
             </Link>
 
-            {/* Search: Order 3 on mobile (full width), flex-1 on desktop */}
             <form
               onSubmit={handleSearch}
               className="flex w-full lg:w-auto order-3 lg:order-none lg:flex-1 max-w-3xl border border-border-color rounded-full items-center pl-3 lg:pl-4 pr-1 h-11 lg:h-12 bg-gray-50 focus-within:bg-white focus-within:border-primary focus-within:shadow-sm transition-all"
@@ -168,12 +148,7 @@ export default function Navbar() {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
 
@@ -188,93 +163,35 @@ export default function Navbar() {
                 type="submit"
                 className="bg-primary text-white w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center hover:bg-primary-hover transition-colors shrink-0"
               >
-                <svg
-                  className="w-4 h-4 lg:w-5 lg:h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+                <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
             </form>
 
-            {/* Desktop Links: Kept exactly as original */}
             <div className="hidden xl:flex items-center gap-6 text-sm font-medium text-text-gray lg:order-none">
-              <Link
-                href="/blog"
-                className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors"
-              >
-                <BookOpen size={18} />
-                Blog
+              <Link href="/blog" className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
+                <BookOpen size={18} /> Blog
               </Link>
-              <Link
-                href="#"
-                className="flex items-center gap-1.5 hover:text-primary transition-colors"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                  />
+              <Link href="#" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
                 New Arrivals
-                <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-sm">
-                  NEW
-                </span>
+                <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-sm">NEW</span>
               </Link>
-              <Link
-                href="#"
-                className="flex items-center gap-1.5 hover:text-primary transition-colors"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
+              <Link href="#" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 Brands
               </Link>
             </div>
 
-            {/* Action Icons: Order 2 on mobile, original position on desktop */}
             <div className="flex items-center gap-4 lg:gap-5 order-2 lg:order-none shrink-0">
-              <button
-                onClick={openWishlist}
-                className="relative text-text-dark hover:text-primary transition-colors group cursor-pointer"
-                title="Wishlist"
-              >
-                <svg
-                  className="w-5 h-5 lg:w-6 lg:h-6 group-hover:scale-110 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
+              <button onClick={openWishlist} className="relative text-text-dark hover:text-primary transition-colors group cursor-pointer" title="Wishlist">
+                <svg className="w-5 h-5 lg:w-6 lg:h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
                 {mounted && wishlistCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 bg-badge-red text-white text-[9px] lg:text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-white">
@@ -283,22 +200,9 @@ export default function Navbar() {
                 )}
               </button>
 
-              <button
-                onClick={openCart}
-                className="relative text-text-dark hover:text-primary transition-colors mr-1 lg:mr-2 group cursor-pointer"
-              >
-                <svg
-                  className="w-5 h-5 lg:w-6 lg:h-6 group-hover:scale-110 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
+              <button onClick={openCart} className="relative text-text-dark hover:text-primary transition-colors mr-1 lg:mr-2 group cursor-pointer">
+                <svg className="w-5 h-5 lg:w-6 lg:h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {mounted && totalItems > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 bg-badge-red text-white text-[9px] lg:text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-white animate-[bounce_2s_infinite]">
@@ -307,57 +211,25 @@ export default function Navbar() {
                 )}
               </button>
 
-              <div
-                className="relative pl-3 lg:pl-4 border-l border-border-color"
-                ref={dropdownRef}
-              >
-                <button
-                  onClick={() => setIsAccountOpen(!isAccountOpen)}
-                  className="flex items-center gap-2 lg:gap-3 group cursor-pointer focus:outline-none"
-                >
+              <div className="relative pl-3 lg:pl-4 border-l border-border-color" ref={dropdownRef}>
+                <button onClick={() => setIsAccountOpen(!isAccountOpen)} className="flex items-center gap-2 lg:gap-3 group cursor-pointer focus:outline-none">
                   <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-gray-200 overflow-hidden border border-border-color">
                     {user ? (
                       <div className="w-full h-full bg-primary flex items-center justify-center text-white font-bold text-base lg:text-lg">
-                        {user.first_name
-                          ? user.first_name.charAt(0).toUpperCase()
-                          : user.username?.charAt(0).toUpperCase()}
+                        {user.first_name ? user.first_name.charAt(0).toUpperCase() : user.username?.charAt(0).toUpperCase()}
                       </div>
                     ) : (
                       <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary">
-                        <svg
-                          className="w-4 h-4 lg:w-5 lg:h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
+                        <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                       </div>
                     )}
                   </div>
                   <div className="hidden md:flex items-center gap-1">
-                    <span className="text-sm font-bold text-text-dark leading-tight group-hover:text-primary transition-colors">
-                      Account
-                    </span>
-                    <svg
-                      className={`w-3 h-3 text-text-gray group-hover:text-primary transition-transform duration-200 ${
-                        isAccountOpen ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
+                    <span className="text-sm font-bold text-text-dark leading-tight group-hover:text-primary transition-colors">Account</span>
+                    <svg className={`w-3 h-3 text-text-gray group-hover:text-primary transition-transform duration-200 ${isAccountOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                 </button>
@@ -366,27 +238,16 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-3 w-48 bg-white border border-border-color rounded-xl shadow-xl py-2 z-50 animate-fadeIn">
                     {user ? (
                       <>
-                        <Link
-                          href="/profile"
-                          onClick={() => setIsAccountOpen(false)}
-                          className="block px-4 py-2.5 text-sm font-medium text-text-dark hover:bg-gray-50 hover:text-primary transition-colors"
-                        >
+                        <Link href="/profile" onClick={() => setIsAccountOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-text-dark hover:bg-gray-50 hover:text-primary transition-colors">
                           My Profile
                         </Link>
                         <div className="border-t border-border-color my-1"></div>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors cursor-pointer"
-                        >
+                        <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors cursor-pointer">
                           Logout
                         </button>
                       </>
                     ) : (
-                      <Link
-                        href="/signin"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="block px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors text-center"
-                      >
+                      <Link href="/signin" onClick={() => setIsAccountOpen(false)} className="block px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors text-center">
                         Login
                       </Link>
                     )}
@@ -396,27 +257,10 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Bottom Row: Made visible on mobile with horizontal scrolling */}
-          <div
-            className={`flex items-center gap-4 lg:gap-8 text-sm transition-all duration-300 w-full overflow-hidden ${
-              isScrolled
-                ? "h-0 opacity-0 mt-0"
-                : "h-8 lg:h-10 opacity-100 mt-1"
-            }`}
-          >
+          <div className={`flex items-center gap-4 lg:gap-8 text-sm transition-all duration-300 w-full overflow-hidden ${isScrolled ? "h-0 opacity-0 mt-0" : "h-8 lg:h-10 opacity-100 mt-1"}`}>
             <button className="hidden lg:flex bg-primary text-white px-5 py-2.5 rounded-md font-semibold items-center gap-2 hover:bg-primary-hover transition-colors whitespace-nowrap shrink-0">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
               All Categories
             </button>
@@ -425,19 +269,12 @@ export default function Navbar() {
               {safeCategories.length === 0 ? (
                 <div className="w-full flex gap-4">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div
-                      key={i}
-                      className="h-4 w-16 lg:w-20 bg-gray-200 rounded animate-pulse shrink-0"
-                    ></div>
+                    <div key={i} className="h-4 w-16 lg:w-20 bg-gray-200 rounded animate-pulse shrink-0"></div>
                   ))}
                 </div>
               ) : (
                 safeCategories.map((category: any) => (
-                  <Link
-                    key={category.id}
-                    href={`/collections/${category.id}`}
-                    className="hover:text-primary whitespace-nowrap transition-colors"
-                  >
+                  <Link key={category.id} href={`/collections/${category.id}`} className="hover:text-primary whitespace-nowrap transition-colors">
                     {category.title}
                   </Link>
                 ))
