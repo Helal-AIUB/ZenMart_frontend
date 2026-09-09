@@ -1,7 +1,5 @@
 "use client";
 import { useState, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/services/apiClient";
 import ProductSkeleton from "../ui/ProductSkeleton";
 import Link from "next/link";
 import { useWishlistStore } from "@/store/useWishlistStore";
@@ -9,43 +7,20 @@ import { useStoreSettings } from "@/store/useStoreSettings";
 import { PawPrint } from "lucide-react";
 import AddToCartButton from "@/components/ui/AddToCartButton";
 
-export default function NewArrivals() {
-  const [selectedCategory, setSelectedCategory] = useState<number | "all">(
-    "all",
-  );
+export default function NewArrivals({
+  initialCollections,
+  groupedProducts,
+}: {
+  initialCollections: any[];
+  groupedProducts: Record<string, any[]>;
+}) {
+  // State to track selected category tab
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
   const { currencySymbol } = useStoreSettings();
   const scrollRef = useRef<HTMLDivElement>(null);
-
   const { addToWishlist, wishlistItems, removeFromWishlist } =
     useWishlistStore();
-
-  const { data: collections = [] } = useQuery({
-    queryKey: ["home_collections"],
-    queryFn: async () => {
-      const res = await apiClient.get("/store/collections/");
-      return res.data.results || res.data;
-    },
-    staleTime: 10 * 60 * 1000,
-    refetchInterval: 10 * 60 * 1000,
-  });
-
-  const { data: productsData, isLoading } = useQuery({
-    queryKey: ["filtered_products", selectedCategory],
-    queryFn: async () => {
-      const endpoint =
-        selectedCategory === "all"
-          ? "store/products/"
-          : `store/products/?collection_id=${selectedCategory}`;
-      const res = await apiClient.get(endpoint);
-      return res.data;
-    },
-    staleTime: 10 * 60 * 1000,
-    refetchInterval: 10 * 60 * 1000,
-  });
-
-  const validProducts = Array.isArray(productsData)
-    ? productsData
-    : productsData?.results || productsData?.data || [];
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -53,6 +28,10 @@ export default function NewArrivals() {
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
   };
+
+  // 🟢 Instant Data Lookup: No API calls, no loading states!
+  const displayProducts = groupedProducts[selectedCategory] || [];
+  const validProducts = Array.isArray(displayProducts) ? displayProducts : [];
 
   return (
     <section className="my-8 md:my-14 mx-3 sm:mx-0 bg-card rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden relative border border-card-border group font-sans p-5 sm:p-8">
@@ -66,7 +45,7 @@ export default function NewArrivals() {
             </h2>
             <PawPrint className="w-5 h-5 md:w-7 md:h-7 text-green-500/80 fill-green-500/20 shrink-0" />
           </div>
-          
+
           <p className="text-slate-500 text-[11px] sm:text-base font-medium mt-1 md:mt-2">
             Explore the latest products just for you
           </p>
@@ -108,13 +87,13 @@ export default function NewArrivals() {
         >
           All
         </button>
-        {Array.isArray(collections) &&
-          collections.map((col: any) => (
+        {Array.isArray(initialCollections) &&
+          initialCollections.map((col: any) => (
             <button
               key={col.id}
-              onClick={() => setSelectedCategory(col.id)}
+              onClick={() => setSelectedCategory(col.id.toString())}
               className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                selectedCategory === col.id
+                selectedCategory === col.id.toString()
                   ? "bg-primary text-white shadow-md shadow-primary/20"
                   : "bg-card-border/40 text-muted hover:text-foreground border border-card-border"
               }`}
@@ -148,11 +127,7 @@ export default function NewArrivals() {
           ref={scrollRef}
           className="flex overflow-x-auto gap-3 sm:gap-5 pb-4 snap-x snap-mandatory custom-scrollbar scroll-smooth hide-scroll-bar"
         >
-          {isLoading && validProducts.length === 0 ? (
-            Array(5)
-              .fill(0)
-              .map((_, i) => <ProductSkeleton key={i} />)
-          ) : validProducts.length === 0 ? (
+          {validProducts.length === 0 ? (
             <div className="w-full text-center py-12 text-muted text-xs sm:text-sm">
               No products found in this category.
             </div>
@@ -208,10 +183,10 @@ export default function NewArrivals() {
                     className="w-full h-28 sm:h-44 bg-[#fafbfc] flex items-center justify-center text-3xl sm:text-5xl relative overflow-hidden transition-all duration-500 md:group-hover/card:bg-primary-light/60 block"
                   >
                     {product.images && product.images.length > 0 ? (
-                      <img 
-                        src={product.images[0].image} 
-                        alt={product.title} 
-                        className="w-full h-full object-cover transform transition-transform duration-700 md:group-hover/card:scale-110" 
+                      <img
+                        src={product.images[0].image}
+                        alt={product.title}
+                        className="w-full h-full object-cover transform transition-transform duration-700 md:group-hover/card:scale-110"
                       />
                     ) : (
                       <span className="transform transition-transform duration-700 md:group-hover/card:scale-110 md:group-hover/card:-translate-y-2">
@@ -232,7 +207,11 @@ export default function NewArrivals() {
 
                     <div className="flex items-center justify-between mb-2 sm:mb-3.5">
                       <div className="flex items-center text-yellow-400 text-[7px] sm:text-[10px] gap-0.5">
-                        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                        <span>★</span>
+                        <span>★</span>
+                        <span>★</span>
+                        <span>★</span>
+                        <span>★</span>
                       </div>
                       <span className="text-[8px] sm:text-[10px] font-medium text-muted tracking-tight">
                         {product.inventory > 0
@@ -244,16 +223,17 @@ export default function NewArrivals() {
                     <div className="mt-auto flex flex-col gap-2 sm:gap-3 pt-1.5 sm:pt-2.5 border-t border-card-border/60">
                       <div className="flex items-baseline gap-1 sm:gap-2">
                         <span className="text-xs sm:text-base font-extrabold text-primary tracking-tight">
-                          {currencySymbol}{currentPrice}
+                          {currencySymbol}
+                          {currentPrice}
                         </span>
                         <span className="text-[9px] sm:text-xs text-muted line-through font-normal">
-                          {currencySymbol}{originalPrice}
+                          {currencySymbol}
+                          {originalPrice}
                         </span>
                       </div>
-
-                      <AddToCartButton 
-                        product={product} 
-                        className="!py-1.5 sm:!py-2.5 !text-[9px] sm:!text-xs" 
+                      <AddToCartButton
+                        product={product}
+                        className="!py-1.5 sm:!py-2.5 !text-[9px] sm:!text-xs"
                       />
                     </div>
                   </div>
