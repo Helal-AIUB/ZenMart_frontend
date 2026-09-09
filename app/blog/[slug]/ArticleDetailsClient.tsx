@@ -1,38 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import useSWR from "swr";
 import Link from "next/link";
 import Image from "next/image";
 import { apiClient } from "@/services/apiClient";
-import { Calendar, Eye, ArrowLeft, Loader2, Share2, Tag } from "lucide-react";
+import { Calendar, Eye, ArrowLeft, Share2, Tag } from "lucide-react";
 
-const fetcher = (url: string) => apiClient.get(url).then(res => res.data.results || res.data);
-
-export default function ArticleDetailsClient({ slug }: { slug: string }) {
+export default function ArticleDetailsClient({ article }: { article: any }) {
   const [viewAdded, setViewAdded] = useState(false);
+  const [currentViews, setCurrentViews] = useState(article?.views || 0);
 
-  // Fetch article by slug
-  const { data: articles, isLoading } = useSWR(`/store/articles/?slug=${slug}`, fetcher);
-  const article = articles?.[0]; // Since filtering returns an array
-
-  // Automatically Increment View Count
+  // 🟢 Automatically Increment View Count (Client-side mutation)
   useEffect(() => {
     if (article && !viewAdded) {
       apiClient.post(`/store/articles/${article.id}/add_view/`)
-        .then(() => setViewAdded(true))
+        .then(() => {
+          setViewAdded(true);
+          setCurrentViews((prev: number) => prev + 1);
+        })
         .catch(console.error);
     }
   }, [article, viewAdded]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
-        <Loader2 className="animate-spin text-emerald-500 mb-4" size={48} />
-        <p className="text-slate-500 font-medium">Loading article...</p>
-      </div>
-    );
-  }
 
   if (!article) {
     return (
@@ -76,7 +64,7 @@ export default function ArticleDetailsClient({ slug }: { slug: string }) {
           <div className="w-1 h-1 rounded-full bg-slate-300 hidden sm:block"></div>
           <div className="flex items-center gap-2">
             <Eye size={16} className="text-slate-400" />
-            {article.views + (viewAdded ? 1 : 0)} Reads
+            {currentViews > 999 ? (currentViews/1000).toFixed(1)+'k' : currentViews} Reads
           </div>
           <div className="w-1 h-1 rounded-full bg-slate-300 hidden sm:block"></div>
           <button className="flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors">
@@ -85,10 +73,9 @@ export default function ArticleDetailsClient({ slug }: { slug: string }) {
         </div>
       </header>
 
-      {/* 🟢 Cover Image (Optimized with next/image) */}
+      {/* 🟢 Cover Image */}
       {article.image && (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-          {/* Added 'relative' class to make fill work */}
           <div className="w-full aspect-[21/9] sm:aspect-[2/1] rounded-3xl overflow-hidden shadow-lg border border-slate-100 bg-slate-100 relative">
             <Image 
               src={article.image} 

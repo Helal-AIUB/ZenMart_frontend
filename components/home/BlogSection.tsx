@@ -1,53 +1,9 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { apiClient } from "@/services/apiClient";
 import { ArrowRight, BookOpen, Calendar, PawPrint } from "lucide-react";
 
-export default function HomeBlogSection() {
-  // 🟢 Optimized: Switched from useSWR to useQuery for consistency and 0-second caching
-  const { data: articles = [], isLoading } = useQuery({
-    queryKey: ["home_articles"],
-    queryFn: async () => {
-      const res = await apiClient.get('/store/articles/?status=Published');
-      return res.data.results || res.data;
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-  
-  const latestArticles = articles.slice(0, 3);
-
-  if (isLoading) {
-    return (
-      <section className="py-12 md:py-20 bg-slate-50/50">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 md:mb-12 animate-pulse">
-            <div className="h-3 md:h-4 bg-slate-200 w-24 md:w-32 mx-auto rounded-full mb-3 md:mb-4"></div>
-            <div className="h-8 md:h-10 bg-slate-200 w-48 md:w-64 mx-auto rounded-lg"></div>
-          </div>
-          {/* 🟢 Responsive Skeleton Grid: 2 columns on mobile, 3 on desktop */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-8">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="bg-white rounded-2xl md:rounded-3xl h-[220px] md:h-[420px] border border-slate-100 shadow-sm animate-pulse flex flex-col">
-                <div className="h-28 sm:h-40 md:h-56 bg-slate-200 rounded-t-2xl md:rounded-t-3xl"></div>
-                <div className="p-3 sm:p-6 flex-1 flex flex-col">
-                  <div className="h-3 md:h-4 bg-slate-200 rounded w-full mb-2"></div>
-                  <div className="h-3 md:h-4 bg-slate-200 rounded w-2/3 mb-2 md:mb-6"></div>
-                  <div className="hidden md:block h-3 bg-slate-200 rounded w-full mb-1"></div>
-                  <div className="hidden md:block h-3 bg-slate-200 rounded w-4/5 mb-4"></div>
-                  <div className="mt-auto flex justify-between">
-                    <div className="h-3 md:h-4 bg-slate-200 rounded w-1/2 md:w-1/4"></div>
-                    <div className="hidden md:block h-8 bg-slate-200 rounded-full w-8"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
+export default function HomeBlogSection({ articles }: { articles: any[] }) {
+  // 🟢 Directly use the pre-fetched data
+  const latestArticles = articles?.slice(0, 3) || [];
 
   if (latestArticles.length === 0) return null;
 
