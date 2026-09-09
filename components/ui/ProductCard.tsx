@@ -1,6 +1,8 @@
+// components/ui/ProductCard.tsx
 "use client";
 import Link from "next/link";
 import Image from "next/image";
+import { useCartStore } from "@/store/useCartStore";
 
 interface ProductCardProps {
   product: any;
@@ -11,8 +13,14 @@ export default function ProductCard({
   product,
   isFlashSale = false,
 }: ProductCardProps) {
+  const { addToCart } = useCartStore();
   const originalPrice = Math.round(Number(product.unit_price) * 1.2);
   const currentPrice = Math.round(Number(product.unit_price));
+
+  const handleQuickAdd = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await addToCart(product, 1);
+  };
 
   return (
     <div className="group/card relative bg-card rounded-[1.5rem] border border-card-border hover:border-card-hoverBorder shadow-sm hover:shadow-[0_20px_40px_-15px_rgba(20,184,166,0.15)] transition-all duration-500 overflow-hidden flex flex-col h-full w-full">
@@ -22,7 +30,6 @@ export default function ProductCard({
         </div>
       )}
 
-      {/* Image Area - Optimized with next/image */}
       <div className="w-full h-40 sm:h-52 bg-[#f8f9fa] flex items-center justify-center text-5xl sm:text-7xl relative overflow-hidden transition-all duration-500 group-hover/card:bg-primary-light">
         {product.images && product.images.length > 0 ? (
           <Image
@@ -39,10 +46,13 @@ export default function ProductCard({
           </span>
         )}
 
-        {/* Backdrop Blur Overlay & Action Buttons */}
         <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px] opacity-0 group-hover/card:opacity-100 transition-all duration-300 z-10 flex flex-col items-center justify-end p-3 sm:p-4 gap-2">
-          <button className="w-full bg-primary text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs shadow-lg hover:bg-primary-hover transition-transform hover:scale-[1.02] active:scale-95 cursor-pointer">
-            Quick Add
+          <button 
+            onClick={handleQuickAdd}
+            disabled={product.inventory <= 0}
+            className="w-full bg-primary text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs shadow-lg hover:bg-primary-hover transition-transform hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {product.inventory > 0 ? "Quick Add" : "Out of Stock"}
           </button>
           <Link
             href={`/products/${product.id}`}
@@ -53,7 +63,6 @@ export default function ProductCard({
         </div>
       </div>
 
-      {/* Details Area */}
       <div className="p-4 sm:p-5 flex flex-col flex-grow bg-card z-0">
         <div className="flex justify-between items-center mb-2">
           <span className="text-[9px] sm:text-[10px] uppercase font-bold text-primary tracking-[0.1em] bg-primary-light px-2 py-0.5 rounded-md">

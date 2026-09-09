@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { useCartStore } from "@/store/useCartStore";
+import toast from "react-hot-toast";
 
 interface AddToCartButtonProps {
   product: any;
@@ -16,9 +17,16 @@ export default function AddToCartButton({
   const { addToCart } = useCartStore();
   const [isAdded, setIsAdded] = useState(false);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const isOutOfStock = product.inventory <= 0;
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation(); 
+    e.stopPropagation();
+
+    if (isOutOfStock) {
+      toast.error("This product is out of stock.");
+      return;
+    }
 
     setIsAdded(true);
 
@@ -26,25 +34,33 @@ export default function AddToCartButton({
       setIsAdded(false);
     }, 1000);
 
-    addToCart(product, 1).catch((error) => {
-      console.error("Failed to add to cart:", error);
-    });
+    try {
+      await addToCart(product, 1);
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.quantity?.[0] ||
+        error.response?.data?.detail ||
+        "Failed to add to cart due to stock limits.";
+      toast.error(errorMessage);
+    }
   };
 
   return (
     <button
-      disabled={isAdded}
+      disabled={isAdded || isOutOfStock}
       onClick={handleAddToCart}
-      className={`w-full py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs shadow-sm transition-all duration-300 md:hover:scale-[1.02] active:scale-95 text-center cursor-pointer tracking-wide flex items-center justify-center gap-1 sm:gap-1.5 ${
-        isAdded
+      className={`w-full py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all duration-300 md:hover:scale-[1.02] active:scale-95 text-center cursor-pointer tracking-wide flex items-center justify-center gap-1.5 ${
+        isOutOfStock
+          ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+          : isAdded
           ? "bg-emerald-500 text-white"
           : "bg-primary text-white md:hover:bg-primary-hover"
-      } ${className}`}
+      } disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
     >
       {isAdded ? (
         <>
           <svg
-            className="w-3 h-3 sm:w-3.5 sm:h-3.5"
+            className="w-3.5 h-3.5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -58,6 +74,8 @@ export default function AddToCartButton({
           </svg>
           Added!
         </>
+      ) : isOutOfStock ? (
+        "Out of Stock"
       ) : (
         "Add to Cart"
       )}

@@ -1,13 +1,14 @@
+// store/useCartStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/services/apiClient";
+import toast from "react-hot-toast";
 
 interface CartStore {
   cartId: string | null;
   cartItems: any[];
   isCartOpen: boolean;
 
-  // 🟢 Coupon States
   appliedCoupon: string | null;
   discountAmount: number;
 
@@ -17,7 +18,6 @@ interface CartStore {
   closeCart: () => void;
   fetchCart: () => Promise<void>;
 
-  // 🟢 Modified: Changed productId to productOrId to accept the full object for optimistic UI
   addToCart: (
     productOrId: any,
     quantity: number,
@@ -27,7 +27,6 @@ interface CartStore {
   updateQuantity: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
 
-  // 🟢 Coupon Actions
   applyCoupon: (code: string, amount: number) => void;
   removeCoupon: () => void;
 
@@ -81,7 +80,6 @@ export const useCartStore = create<CartStore>()(
           typeof productOrId === "object" && productOrId !== null;
         const productId = isProductObject ? productOrId.id : productOrId;
 
-        // 🟢 INSTANT UI UPDATE (Optimistic Logic)
         if (isProductObject) {
           const existingItem = cartItems.find(
             (item: any) => item.product?.id === productId,
@@ -140,6 +138,9 @@ export const useCartStore = create<CartStore>()(
             set({ cartItems: previousCart });
           }
 
+          const errorMessage = error.response?.data?.quantity?.[0] || error.response?.data?.detail || "Failed to add to cart due to stock limits.";
+          toast.error(errorMessage);
+
           if (
             (error.response?.status === 404 ||
               error.response?.status === 500) &&
@@ -181,8 +182,10 @@ export const useCartStore = create<CartStore>()(
           await apiClient.patch(`/store/carts/${cartId}/items/${itemId}/`, {
             quantity,
           });
-        } catch (error) {
+        } catch (error: any) {
           console.error("Failed to update quantity", error);
+          const errorMessage = error.response?.data?.quantity?.[0] || "Failed to update quantity.";
+          toast.error(errorMessage);
           set({ cartItems: previousItems });
         }
       },
@@ -217,7 +220,6 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      // 🟢 Actions for Coupon (Untouched)
       applyCoupon: (code: string, amount: number) => {
         set({ appliedCoupon: code, discountAmount: amount });
       },

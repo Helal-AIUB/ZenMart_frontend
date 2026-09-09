@@ -1,3 +1,4 @@
+// app/(shop)/collections/[id]/page.tsx
 "use client";
 import { useState } from "react";
 import { useParams } from "next/navigation";
@@ -5,22 +6,18 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/services/apiClient";
 import Link from "next/link";
 import { useWishlistStore } from "@/store/useWishlistStore";
-import { useCartStore } from "@/store/useCartStore";
 import { useStoreSettings } from "@/store/useStoreSettings";
+import AddToCartButton from "@/components/ui/AddToCartButton";
 
 export default function CollectionProductsPage() {
   const params = useParams();
   const collectionId = params.id;
   const [page, setPage] = useState(1);
   const { currencySymbol } = useStoreSettings();
-  const [addingId, setAddingId] = useState<number | null>(null);
-  const [addedId, setAddedId] = useState<number | null>(null);
 
   const { addToWishlist, wishlistItems, removeFromWishlist } =
     useWishlistStore();
-  const { addToCart } = useCartStore();
 
-  // Fetch products for specific collection with pagination
   const { data, isLoading, error } = useQuery({
     queryKey: ["collection_products", collectionId, page],
     queryFn: async () => {
@@ -33,20 +30,8 @@ export default function CollectionProductsPage() {
 
   const products = Array.isArray(data) ? data : data?.results || [];
   const totalCount = data?.count || 0;
-  const pageSize = 10; // Django pagination size
+  const pageSize = 10;
   const totalPages = Math.ceil(totalCount / pageSize);
-
-  const handleAddToCart = async (product: any) => {
-    setAddingId(product.id);
-    try {
-      await addToCart(product.id, 1);
-      setAddingId(null);
-      setAddedId(product.id);
-      setTimeout(() => setAddedId(null), 2000);
-    } catch (error) {
-      setAddingId(null);
-    }
-  };
 
   if (isLoading)
     return (
@@ -76,7 +61,6 @@ export default function CollectionProductsPage() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 py-28 min-h-screen font-sans">
-      {/* Header Banner */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 border-b border-card-border pb-6 gap-4">
         <div>
           <span className="text-[10px] uppercase font-black text-primary tracking-[0.2em] bg-primary-light px-3 py-1 rounded-md mb-2 inline-block">
@@ -117,15 +101,12 @@ export default function CollectionProductsPage() {
               const isWishlisted = wishlistItems.some(
                 (item: any) => item.id === product.id,
               );
-              const isThisAdding = addingId === product.id;
-              const isThisAdded = addedId === product.id;
 
               return (
                 <div
                   key={product.id}
                   className="group/card relative bg-card rounded-[1.75rem] border border-card-border hover:border-card-hoverBorder shadow-2xs hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col h-full"
                 >
-                  {/* Top Discount Badge & Wishlist */}
                   <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between z-20">
                     <span className="bg-badge-red text-white text-[10px] font-black px-2.5 py-1 rounded-full tracking-wider shadow-sm uppercase">
                       -27%
@@ -161,7 +142,6 @@ export default function CollectionProductsPage() {
                     </button>
                   </div>
 
-                  {/* Product Image Area */}
                   <Link
                     href={`/products/${product.id}`}
                     className="w-full h-44 bg-[#fafbfc] flex items-center justify-center text-5xl relative overflow-hidden transition-all duration-500 group-hover/card:bg-primary-light/60 block"
@@ -171,7 +151,6 @@ export default function CollectionProductsPage() {
                     </span>
                   </Link>
 
-                  {/* Product Info */}
                   <div className="p-4 flex flex-col flex-grow bg-card z-0">
                     <Link
                       href={`/products/${product.id}`}
@@ -182,7 +161,6 @@ export default function CollectionProductsPage() {
                       </h2>
                     </Link>
 
-                    {/* Rating & Stock Info */}
                     <div className="flex items-center justify-between mb-3.5">
                       <div className="flex items-center text-yellow-400 text-[10px] gap-0.5">
                         <span>★</span>
@@ -194,11 +172,10 @@ export default function CollectionProductsPage() {
                       <span className="text-[10px] font-medium text-muted tracking-tight">
                         {product.inventory > 0
                           ? `${product.inventory} left`
-                          : "In Stock"}
+                          : "Out of stock"}
                       </span>
                     </div>
 
-                    {/* Price & Add to Cart Button */}
                     <div className="mt-auto flex flex-col gap-3 pt-2.5 border-t border-card-border/60">
                       <div className="flex items-baseline gap-2">
                         <span className="text-base font-extrabold text-primary tracking-tight">
@@ -209,44 +186,7 @@ export default function CollectionProductsPage() {
                         </span>
                       </div>
 
-                      <button
-                        disabled={isThisAdding || isThisAdded}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleAddToCart(product);
-                        }}
-                        className={`w-full py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-95 text-center cursor-pointer tracking-wide flex items-center justify-center gap-1.5 ${
-                          isThisAdded
-                            ? "bg-emerald-500 text-white"
-                            : "bg-primary text-white hover:bg-primary-hover"
-                        }`}
-                      >
-                        {isThisAdding ? (
-                          <>
-                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Adding...
-                          </>
-                        ) : isThisAdded ? (
-                          <>
-                            <svg
-                              className="w-3.5 h-3.5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={3}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            Product Added!
-                          </>
-                        ) : (
-                          "Add to Cart"
-                        )}
-                      </button>
+                      <AddToCartButton product={product} />
                     </div>
                   </div>
                 </div>
@@ -254,7 +194,6 @@ export default function CollectionProductsPage() {
             })}
           </div>
 
-          {/* Pagination Controls */}
           <div className="flex items-center justify-center gap-3 mt-12">
             <button
               onClick={() => {
