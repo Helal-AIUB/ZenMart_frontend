@@ -37,16 +37,16 @@ export default function NewArrivals({
     <section className="my-8 md:my-14 mx-3 sm:mx-0 bg-card rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.04)] overflow-hidden relative border border-card-border group font-sans p-5 sm:p-8">
       <div className="absolute top-0 right-1/4 w-[90%] md:w-[60%] h-28 bg-primary/5 blur-[90px] pointer-events-none"></div>
 
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 relative z-10 w-full">
-        <div className="flex-1 w-full">
-          <div className="flex items-center gap-2 sm:gap-3 w-full">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
+      <div className="flex flex-row items-center justify-between gap-2 sm:gap-4 mb-4 sm:mb-6 relative z-10 w-full">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 w-full">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight truncate">
               New Arrivals
             </h2>
             <PawPrint className="w-5 h-5 md:w-7 md:h-7 text-green-500/80 fill-green-500/20 shrink-0" />
           </div>
 
-          <p className="text-slate-500 text-[11px] sm:text-base font-medium mt-1 md:mt-2">
+          <p className="text-slate-500 text-[10px] sm:text-base font-medium mt-0.5 md:mt-2 truncate">
             Explore the latest products just for you
           </p>
         </div>
@@ -57,11 +57,12 @@ export default function NewArrivals({
               ? "/products"
               : `/collections/${selectedCategory}`
           }
-          className="group flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-bold text-green-700 bg-green-50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-green-600 hover:text-white transition-all duration-300 shrink-0"
+          prefetch={true}
+          className="group flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-sm font-bold text-green-700 bg-green-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full hover:bg-green-600 hover:text-white transition-all duration-300 shrink-0 relative z-50 cursor-pointer"
         >
           <span>View All</span>
           <svg
-            className="w-3.5 h-3.5 sm:w-4 sm:h-4 transform group-hover:translate-x-1 transition-transform"
+            className="w-3 h-3 sm:w-4 sm:h-4 transform group-hover:translate-x-1 transition-transform"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

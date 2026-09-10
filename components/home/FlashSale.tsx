@@ -97,6 +97,7 @@ export default function FlashSale({
 
           <Link
             href="/products"
+            prefetch={true}
             className="flex lg:hidden xl:flex items-center gap-0.5 text-[10px] sm:text-xs font-bold text-primary hover:text-primary-hover transition-all group/link whitespace-nowrap"
           >
             <span>View All</span>
