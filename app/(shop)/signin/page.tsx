@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { publicClient, apiClient } from "@/services/apiClient"; // 🟢 দুটোই ইম্পোর্ট করুন
+import { useRouter } from "next/navigation"; // 🟢 Import useRouter for fast navigation
+import { publicClient, apiClient } from "@/services/apiClient"; 
 
 export default function SignInPage() {
+  const router = useRouter(); // 🟢 Initialize router
+
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -12,6 +15,13 @@ export default function SignInPage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false); // 🟢 State to show redirect status
+
+  // 🟢 Prefetch routes in the background as soon as the sign-in page loads
+  useEffect(() => {
+    router.prefetch("/admin");
+    router.prefetch("/");
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -20,7 +30,7 @@ export default function SignInPage() {
     });
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -32,13 +42,11 @@ const handleSubmit = async (e: React.FormEvent) => {
       });
 
       if (response.status === 200) {
-        console.log("Backend Response:", response.data); 
-
         const access = response.data?.access;
         const refresh = response.data?.refresh;
 
         if (!access) {
-          setError("Login successful, but Backend did not send the Token in JSON! Check backend code.");
+          setError("Login successful, but Backend did not send the Token in JSON!");
           setLoading(false);
           return; 
         }
@@ -47,17 +55,21 @@ const handleSubmit = async (e: React.FormEvent) => {
         if (refresh) localStorage.setItem("refresh", refresh);
 
         try {
+          setRedirecting(true); // 🟢 Show user that we are preparing the dashboard
           const userRes = await apiClient.get("/auth/users/me/");
           const user = userRes.data;
 
+          // 🟢 Use router.push() instead of window.location.href for 0-second page transitions
           if (user.is_staff || user.is_superuser) {
-            window.location.href = "/admin";
+            router.push("/admin");
           } else {
-            window.location.href = "/";
+            router.push("/");
           }
         } catch (profileErr) {
           console.error("Failed to fetch user profile:", profileErr);
           setError("Failed to verify user profile.");
+          setLoading(false);
+          setRedirecting(false);
         }
       }
     } catch (err: any) {
@@ -66,7 +78,6 @@ const handleSubmit = async (e: React.FormEvent) => {
         err.response?.data?.detail ||
           "Invalid username or password. Please try again."
       );
-    } finally {
       setLoading(false);
     }
   };
@@ -88,7 +99,17 @@ const handleSubmit = async (e: React.FormEvent) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="form-label" htmlFor="username">Username</label>
-            <input id="username" name="username" type="text" required className="form-input" placeholder="admin" value={formData.username} onChange={handleChange} />
+            <input 
+              id="username" 
+              name="username" 
+              type="text" 
+              required 
+              className="form-input" 
+              placeholder="admin" 
+              value={formData.username} 
+              onChange={handleChange} 
+              disabled={loading || redirecting}
+            />
           </div>
 
           <div>
@@ -96,12 +117,28 @@ const handleSubmit = async (e: React.FormEvent) => {
               <label className="form-label !mb-0" htmlFor="password">Password</label>
               <Link href="#" className="text-xs font-medium text-primary hover:text-primary-hover">Forgot password?</Link>
             </div>
-            <input id="password" name="password" type="password" required className="form-input" placeholder="••••••••" value={formData.password} onChange={handleChange} />
+            <input 
+              id="password" 
+              name="password" 
+              type="password" 
+              required 
+              className="form-input" 
+              placeholder="••••••••" 
+              value={formData.password} 
+              onChange={handleChange} 
+              disabled={loading || redirecting}
+            />
           </div>
 
           <div className="pt-3">
-            <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? "Signing In..." : "Sign In"}
+            <button 
+              type="submit" 
+              disabled={loading || redirecting} 
+              className="btn-primary flex items-center justify-center gap-2"
+            >
+              {loading && !redirecting && "Authenticating..."}
+              {redirecting && "Redirecting..."}
+              {!loading && !redirecting && "Sign In"}
             </button>
           </div>
         </form>

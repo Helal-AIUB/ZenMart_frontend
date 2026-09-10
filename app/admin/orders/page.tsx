@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import useSWR from "swr";
 import { apiClient } from "@/services/apiClient";
-import { Search, ChevronLeft, ChevronRight, AlertCircle, Loader2, Eye, Trash2, CheckCircle, Clock, XCircle, Calendar, CalendarDays, Plus } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, AlertCircle, Eye, Trash2, CheckCircle, Clock, XCircle, Calendar, CalendarDays, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import OrderDetailsModal from "@/components/admin/OrderDetailsModal";
 import CreateOrderModal from "@/components/admin/CreateOrderModal";
@@ -32,17 +32,14 @@ interface Order {
   discount_amount?: string | number;
 }
 
-// SWR Fetcher for ultra-fast data fetching and caching
 const fetcher = (url: string) => apiClient.get(url).then(res => res.data.results || res.data);
 
 export default function AdminOrdersPage() {
-  // Replaced useEffect with useSWR for caching, instant loading, and auto-revalidation
   const { data: allOrders = [], error, mutate, isLoading: loading } = useSWR<Order[]>('/store/orders/', fetcher, {
     revalidateOnFocus: true, 
     dedupingInterval: 5000,  
   });
 
-  // Filters State
   const [filterId, setFilterId] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState(""); 
@@ -50,7 +47,6 @@ export default function AdminOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Modal States
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -81,17 +77,16 @@ export default function AdminOrdersPage() {
   const handleDelete = async (id: number) => {
     if (!window.confirm("Are you sure you want to permanently delete this order?")) return;
     
-    // Optimistic UI Update: Instantly remove from screen before API call finishes
     const previousOrders = [...allOrders];
     mutate(allOrders.filter((o) => o.id !== id), false);
 
     try {
       await apiClient.delete(`/store/orders/${id}/`);
       toast.success("Order deleted successfully");
-      mutate(); // Sync final state with backend
+      mutate();
     } catch (error) {
       toast.error("Failed to delete order.");
-      mutate(previousOrders, false); // Revert changes if API fails
+      mutate(previousOrders, false);
     }
   };
 
@@ -101,9 +96,9 @@ export default function AdminOrdersPage() {
 
   const renderStatusBadge = (status: string) => {
     switch (status) {
-      case 'C': return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold whitespace-nowrap"><CheckCircle size={12} /> Complete</span>;
-      case 'P': return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-xs font-semibold whitespace-nowrap"><Clock size={12} /> Pending</span>;
-      case 'F': return <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-full text-xs font-semibold whitespace-nowrap"><XCircle size={12} /> Failed</span>;
+      case 'C': return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap"><CheckCircle size={12} /> Complete</span>;
+      case 'P': return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap"><Clock size={12} /> Pending</span>;
+      case 'F': return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-full text-[10px] sm:text-xs font-semibold whitespace-nowrap"><XCircle size={12} /> Failed</span>;
       default: return null;
     }
   };
@@ -113,33 +108,33 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="space-y-6 pb-10 font-sans px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto mt-6">
+    <div className="space-y-4 sm:space-y-6 pb-10 font-sans mt-4 sm:mt-6">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">Order Management</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">View, track, and update customer orders ({totalItems} records found)</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">Order Management</h1>
+          <p className="text-[11px] sm:text-sm text-slate-500 mt-1">View, track, and update customer orders ({totalItems} records found)</p>
         </div>
         <button 
           onClick={() => setIsCreateOpen(true)}
-          className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95 shrink-0"
         >
           <Plus size={18} /> Add Order
         </button>
       </div>
 
       {/* Advanced Premium Filters - Fully Responsive Grid */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-100">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="bg-white p-3 sm:p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
           
           <div className="relative w-full">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input type="number" placeholder="Search by Order ID..." value={filterId} onChange={(e) => setFilterId(e.target.value)} className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none bg-slate-50 focus:bg-white" />
+            <input type="number" placeholder="Search by Order ID..." value={filterId} onChange={(e) => setFilterId(e.target.value)} className="w-full pl-9 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none bg-slate-50 focus:bg-white" />
           </div>
           
           <div className="w-full">
-            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer outline-none transition-all text-slate-700">
+            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-full px-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer outline-none transition-all text-slate-700">
               <option value="">All Statuses</option>
               <option value="P">Pending Orders</option>
               <option value="C">Completed Orders</option>
@@ -149,12 +144,12 @@ export default function AdminOrdersPage() {
 
           <div className="relative w-full">
             <CalendarDays size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input type="date" value={filterDate} onChange={(e) => { setFilterDate(e.target.value); setFilterMonth(""); }} className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all text-slate-700 cursor-pointer" title="Filter by Specific Date"/>
+            <input type="date" value={filterDate} onChange={(e) => { setFilterDate(e.target.value); setFilterMonth(""); }} className="w-full pl-9 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all text-slate-700 cursor-pointer" title="Filter by Specific Date"/>
           </div>
 
           <div className="relative w-full">
             <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input type="month" value={filterMonth} onChange={(e) => { setFilterMonth(e.target.value); setFilterDate(""); }} className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all text-slate-700 cursor-pointer" title="Filter by Specific Month"/>
+            <input type="month" value={filterMonth} onChange={(e) => { setFilterMonth(e.target.value); setFilterDate(""); }} className="w-full pl-9 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all text-slate-700 cursor-pointer" title="Filter by Specific Month"/>
           </div>
 
         </div>
@@ -162,22 +157,34 @@ export default function AdminOrdersPage() {
 
       {/* Data Table Container */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        {/* Horizontal scroll wrapper for mobile safety */}
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse min-w-[700px] md:min-w-[800px]">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                <th className="px-4 sm:px-6 py-4 w-24">Order ID</th>
-                <th className="px-4 sm:px-6 py-4">Customer Info</th>
-                <th className="px-4 sm:px-6 py-4">Date & Time</th>
-                <th className="px-4 sm:px-6 py-4">Total Amount</th>
-                <th className="px-4 sm:px-6 py-4 w-32">Status</th>
-                <th className="px-4 sm:px-6 py-4 text-right w-32">Actions</th>
+              <tr className="bg-slate-50/80 border-b border-slate-100 text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 font-bold">
+                <th className="px-4 sm:px-6 py-3 sm:py-4 w-20 sm:w-24">Order ID</th>
+                <th className="px-4 sm:px-6 py-3 sm:py-4">Customer Info</th>
+                <th className="px-4 sm:px-6 py-3 sm:py-4">Date & Time</th>
+                <th className="px-4 sm:px-6 py-3 sm:py-4">Total Amount</th>
+                <th className="px-4 sm:px-6 py-3 sm:py-4 w-28 sm:w-32">Status</th>
+                <th className="px-4 sm:px-6 py-3 sm:py-4 text-right w-28 sm:w-32">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
               {loading && allOrders.length === 0 ? (
-                <tr><td colSpan={6} className="px-6 py-20 text-center text-slate-400"><Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto mb-3" /> Loading...</td></tr>
+                // 🟢 Beautiful Skeleton Loader for Table
+                [...Array(6)].map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="px-4 sm:px-6 py-4"><div className="h-4 bg-slate-200 rounded w-12 sm:w-16"></div></td>
+                    <td className="px-4 sm:px-6 py-4">
+                      <div className="h-4 bg-slate-200 rounded w-24 sm:w-32 mb-1.5"></div>
+                      <div className="h-3 bg-slate-200 rounded w-16 sm:w-24"></div>
+                    </td>
+                    <td className="px-4 sm:px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20 sm:w-24"></div></td>
+                    <td className="px-4 sm:px-6 py-4"><div className="h-4 bg-slate-200 rounded w-12 sm:w-16"></div></td>
+                    <td className="px-4 sm:px-6 py-4"><div className="h-6 bg-slate-200 rounded-full w-16 sm:w-20"></div></td>
+                    <td className="px-4 sm:px-6 py-4"><div className="h-8 bg-slate-200 rounded-lg w-16 sm:w-20 ml-auto"></div></td>
+                  </tr>
+                ))
               ) : currentDisplayedOrders.length === 0 ? (
                 <tr><td colSpan={6} className="px-6 py-20 text-center text-slate-400"><AlertCircle size={32} className="mx-auto mb-3 text-slate-300" /> No orders match your filters.</td></tr>
               ) : (
@@ -189,27 +196,29 @@ export default function AdminOrdersPage() {
 
                   return (
                     <tr key={order.id} className="hover:bg-slate-50/80 transition-colors group">
-                      <td className="px-4 sm:px-6 py-4 font-extrabold text-slate-700">#{order.id.toString().padStart(4, '0')}</td>
-                      <td className="px-4 sm:px-6 py-4">
-                        <p className="font-bold text-slate-700 truncate max-w-[150px] sm:max-w-[200px]">{order.first_name || `Cust-ID: ${order.customer}`}</p>
-                        <p className="text-xs text-slate-500">{order.phone || "No phone"}</p>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 font-extrabold text-slate-700">#{order.id.toString().padStart(4, '0')}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4">
+                        <p className="font-bold text-slate-700 truncate max-w-[120px] sm:max-w-[200px]">{order.first_name || `Cust-ID: ${order.customer}`}</p>
+                        <p className="text-[10px] sm:text-xs text-slate-500">{order.phone || "No phone"}</p>
                       </td>
-                      <td className="px-4 sm:px-6 py-4 text-slate-500 font-medium whitespace-nowrap">{new Date(order.placed_at).toLocaleDateString()}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-slate-500 font-medium whitespace-nowrap text-[11px] sm:text-sm">{new Date(order.placed_at).toLocaleDateString()}</td>
                       
-                      <td className="px-4 sm:px-6 py-4">
+                      <td className="px-4 sm:px-6 py-3 sm:py-4">
                         <p className="font-bold text-emerald-600">${total}</p>
                         {order.coupon_code && (
-                          <span className="inline-block mt-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded text-[10px] font-bold">
+                          <span className="inline-block mt-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded text-[9px] sm:text-[10px] font-bold">
                             {order.coupon_code}
                           </span>
                         )}
                       </td>
                       
-                      <td className="px-4 sm:px-6 py-4">{renderStatusBadge(order.payment_status)}</td>
-                      <td className="px-4 sm:px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => { setSelectedOrder(order); setIsDetailsOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition-colors border border-emerald-200 active:scale-95"><Eye size={14} /> <span className="hidden sm:inline">View</span></button>
-                          <button onClick={() => handleDelete(order.id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors active:scale-95"><Trash2 size={18} /></button>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4">{renderStatusBadge(order.payment_status)}</td>
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-right">
+                        <div className="flex items-center justify-end gap-1 sm:gap-2">
+                          <button onClick={() => { setSelectedOrder(order); setIsDetailsOpen(true); }} className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition-colors border border-emerald-200 active:scale-95">
+                            <Eye size={14} className="sm:w-4 sm:h-4"/> <span className="hidden lg:inline">View</span>
+                          </button>
+                          <button onClick={() => handleDelete(order.id)} className="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors active:scale-95"><Trash2 size={16} className="sm:w-[18px] sm:h-[18px]"/></button>
                         </div>
                       </td>
                     </tr>
@@ -222,17 +231,15 @@ export default function AdminOrdersPage() {
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div className="px-4 sm:px-6 py-4 border-t border-slate-100 flex items-center justify-between sm:justify-center gap-4 sm:gap-6 bg-slate-50/50">
-            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 border border-slate-200 rounded-lg hover:bg-white disabled:opacity-40 text-slate-600 transition-all shadow-sm bg-white"><ChevronLeft size={18} /></button>
-            <span className="text-xs sm:text-sm font-bold tracking-wide text-slate-600">Page {currentPage} of {totalPages}</span>
-            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 border border-slate-200 rounded-lg hover:bg-white disabled:opacity-40 text-slate-600 transition-all shadow-sm bg-white"><ChevronRight size={18} /></button>
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 flex items-center justify-between sm:justify-center gap-4 sm:gap-6 bg-slate-50/50">
+            <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-1.5 sm:p-2 border border-slate-200 rounded-lg hover:bg-white disabled:opacity-40 text-slate-600 transition-all shadow-sm bg-white"><ChevronLeft size={16} className="sm:w-[18px] sm:h-[18px]" /></button>
+            <span className="text-[11px] sm:text-sm font-bold tracking-wide text-slate-600">Page {currentPage} of {totalPages}</span>
+            <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-1.5 sm:p-2 border border-slate-200 rounded-lg hover:bg-white disabled:opacity-40 text-slate-600 transition-all shadow-sm bg-white"><ChevronRight size={16} className="sm:w-[18px] sm:h-[18px]"/></button>
           </div>
         )}
       </div>
 
       <OrderDetailsModal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} order={selectedOrder} onUpdate={handleOrderUpdated} />
-      
-      {/* Auto-refresh table after creating new order */}
       <CreateOrderModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSuccess={() => mutate()} />
     </div>
   );

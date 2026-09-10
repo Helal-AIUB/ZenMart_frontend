@@ -1,5 +1,6 @@
 import Sidebar from "@/components/admin/Sidebar";
 import Header from "@/components/admin/Header";
+import ReactQueryProvider from "@/providers/ReactQueryProvider"; // 🟢 Import the Query Provider
 
 export default function AdminLayout({
   children,
@@ -7,14 +8,18 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen w-full bg-slate-50/50 overflow-hidden font-sans">
-      <Sidebar />
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-8">
-          {children}
-        </main>
+    // 🟢 Wrap the entire Admin layout with ReactQueryProvider
+    <ReactQueryProvider>
+      <div className="flex h-screen w-full bg-slate-50/50 overflow-hidden font-sans">
+        <Sidebar />
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <Header />
+          {/* 🟢 Make padding responsive: smaller on mobile (p-4), normal on desktop (p-8) */}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 md:p-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </ReactQueryProvider>
   );
 }
