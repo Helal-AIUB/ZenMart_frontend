@@ -18,10 +18,13 @@ test.describe('Petora BD Comprehensive E2E Test Suite', () => {
   });
 
   test('3. Homepage displays hero section banner', async ({ page }) => {
-    await page.goto('/');
-    const heroSection = page.locator('main, section').first();
-    await expect(heroSection).toBeVisible();
-  });
+      await page.goto('/');
+      
+      // Use a web-first locator targeting the user-visible alt text of the hero image
+      const heroBanner = page.getByRole('img', { name: 'Petora BD Premium Pet Care' });
+      
+      await expect(heroBanner).toBeVisible();
+    });
 
   test('4. Homepage shows featured product collections or grid', async ({ page }) => {
     await page.goto('/');
@@ -36,13 +39,16 @@ test.describe('Petora BD Comprehensive E2E Test Suite', () => {
   });
 
   test('6. Clicking logo navigates to homepage', async ({ page }) => {
-    await page.goto('/products');
-    const logo = page.locator('header a').first();
-    if (await logo.isVisible()) {
+      await page.goto('/products');
+      
+      // Use a web-first locator targeting the exact link, and remove the `if` block
+      const logo = page.getByRole('link', { name: /PetoraBD/i }).first();
+      
+      // Playwright will automatically wait for the element to be visible and actionable
       await logo.click();
-      await expect(page).toHaveURL('/');
-    }
-  });
+      
+      await expect(page).toHaveURL('http://localhost:3000/');
+    });
 
 
   // --- AUTHENTICATION: SIGN UP (Tests 7-11) ---
@@ -138,13 +144,15 @@ test.describe('Petora BD Comprehensive E2E Test Suite', () => {
   });
 
   test('17. Link from signin page navigates to signup', async ({ page }) => {
-    await page.goto('/signin');
-    const signupLink = page.locator('a[href*="/signup"]').first();
-    if (await signupLink.isVisible()) {
+      await page.goto('/signin');
+      
+      // Directly locate and click. Playwright automatically waits for visibility and actionability.
+      const signupLink = page.locator('a[href*="/signup"]').first();
       await signupLink.click();
+      
+      // Assert navigation completes
       await expect(page).toHaveURL(/signup/);
-    }
-  });
+    });
 
 
   // --- PRODUCTS & CATALOG (Tests 18-25) ---
@@ -154,40 +162,59 @@ test.describe('Petora BD Comprehensive E2E Test Suite', () => {
   });
 
   test('19. Product search input is interactive', async ({ page }) => {
-    await page.goto('/products');
-    const searchInput = page.locator('input[placeholder*="Search"]').first();
-    if (await searchInput.isVisible()) {
-      await searchInput.fill('Pet');
-      await expect(searchInput).toHaveValue('Pet');
-    }
-  });
+      await page.goto('/products');
+      
+      const searchInput = page.getByPlaceholder(/Search for products/i).first();
+      
+      // Retry the fill action if React hydration clears it, until it successfully persists
+      await expect(async () => {
+        await searchInput.fill('Pet');
+        expect(await searchInput.inputValue()).toBe('Pet');
+      }).toPass();
+    });
 
   test('20. Clicking product card navigates to product detail page', async ({ page }) => {
-    await page.goto('/products');
-    const firstProductLink = page.locator('a[href*="/products/"]').first();
-    if (await firstProductLink.isVisible()) {
+      await page.goto('/products');
+      
+      // Scope the locator to the main content area to ensure we hit a product card
+      const firstProductLink = page.locator('main a[href*="/products/"]').first();
+      
+      // Let Playwright automatically wait for the element to be visible and actionable
+      await firstProductLink.waitFor({ state: 'visible' });
       await firstProductLink.click();
+      
+      // Verify navigation to a product detail URL containing an ID
       await expect(page).toHaveURL(/\/products\/\d+/);
-    }
-  });
+    });
 
   test('21. Product detail page displays title and price area', async ({ page }) => {
-    await page.goto('/products/1').catch(() => {});
-    await expect(page.locator('body')).toBeVisible();
-  });
+      // Remove .catch() to prevent swallowing critical navigation errors
+      await page.goto('/products/1');
+      
+      // Assert specific elements relevant to the product detail page 
+      // (e.g., a heading for the title, and a common selector for price)
+      await expect(page.getByRole('heading').first()).toBeVisible();
+      
+      // Alternatively, if you just want to ensure the main content loaded instead of crashing:
+      await expect(page.locator('main')).toBeVisible();
+    });
 
   test('22. Product detail page displays Add to Cart action', async ({ page }) => {
-    await page.goto('/products/1').catch(() => {});
-    const bodyContent = await page.textContent('body');
-    expect(bodyContent).toBeDefined();
-  });
+      // Remove the silent catch so navigation failures are reported properly
+      await page.goto('/products/1');
+      
+      // Use a web-first assertion to specifically check for the button
+      const addToCartBtn = page.locator('button', { hasText: /Add to Cart/i }).first();
+      await expect(addToCartBtn).toBeVisible();
+    });
 
   test('23. Non-existent product handles error or 404 view', async ({ page }) => {
-    await page.goto('/products/999999');
-    await page.waitForTimeout(500);
-    const content = await page.content();
-    expect(content.length).toBeGreaterThan(0);
-  });
+      // Wait only for the DOM to be ready, bypassing hanging network requests
+      await page.goto('/products/999999', { waitUntil: 'domcontentloaded' });
+      
+      // Use a web-first assertion to specifically check for the 404 state
+      await expect(page.getByText('Product not found.')).toBeVisible();
+    });
 
   test('24. Collections page lists available categories', async ({ page }) => {
     await page.goto('/collections');
@@ -314,10 +341,16 @@ test.describe('Petora BD Comprehensive E2E Test Suite', () => {
   });
 
   test('40. Blog article layout contains structured content', async ({ page }) => {
-    await page.goto('/');
-    const bodyText = await page.textContent('body');
-    expect(bodyText).toBeDefined();
-  });
+      // Navigate to the blog index safely, bypassing hanging 'load' events
+      await page.goto('/blog', { waitUntil: 'domcontentloaded' });
+      
+      // Click the first available blog article
+      const firstArticleLink = page.locator('a[href*="/blog/"]').first();
+      await firstArticleLink.click();
+      
+      // Use a web-first assertion to verify actual structured content (e.g., the article's main heading)
+      await expect(page.getByRole('heading').first()).toBeVisible();
+    });
 
 
   // --- CHECKOUT & COUPONS (Tests 41-45) ---
