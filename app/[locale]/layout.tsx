@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import StoreInit from "@/components/StoreInit";
 
-// Font Optimization (Zero Layout Shift)
 const inter = Inter({ 
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
 });
 
-// Global SEO Metadata
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
@@ -39,13 +37,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+// 🟢 Fix: Accept params.locale and pass it to HTML tag
+export default async function LocaleLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>; // Update type to Promise
 }) {
+  // Await the params to get the locale
+  const { locale } = await params;
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={`${inter.variable} font-sans antialiased`}>
         <StoreInit />
         {children}

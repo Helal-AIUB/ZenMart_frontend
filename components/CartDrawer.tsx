@@ -5,9 +5,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/services/apiClient";
 import { useRouter } from "next/navigation";
+// Import next-intl hook
+import { useTranslations } from "next-intl";
 
 export default function CartDrawer() {
   const router = useRouter();
+  // Initialize translations
+  const t = useTranslations("CartDrawer");
+  
   const { isCartOpen, closeCart, cartItems, updateQuantity, removeItem } = useCartStore();
   const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -54,7 +59,7 @@ export default function CartDrawer() {
       >
         <div className="flex items-center justify-between p-6 border-b border-card-border">
           <h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2">
-            Shopping Cart
+            {t("shoppingCart")}
             <span className="bg-primary-light text-primary text-xs px-2 py-0.5 rounded-full font-bold">
               {cartItems?.length || 0}
             </span>
@@ -73,10 +78,10 @@ export default function CartDrawer() {
           {!cartItems || cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center opacity-70">
               <span className="text-6xl mb-4">🛍️</span>
-              <p className="text-lg font-bold text-foreground">Your cart is empty</p>
-              <p className="text-sm text-muted mt-1">Looks like you haven't added anything yet.</p>
+              <p className="text-lg font-bold text-foreground">{t("cartEmpty")}</p>
+              <p className="text-sm text-muted mt-1">{t("cartEmptySub")}</p>
               <button onClick={closeCart} className="mt-6 text-primary text-sm font-bold hover:underline cursor-pointer">
-                Continue Shopping
+                {t("continueShopping")}
               </button>
             </div>
           ) : (
@@ -88,7 +93,7 @@ export default function CartDrawer() {
                 <div className="flex flex-col flex-1 justify-between py-1">
                   <div>
                     <h3 className="text-sm font-bold text-foreground line-clamp-1 leading-tight">
-                      {item.product?.title || "Product Name"}
+                      {item.product?.title || t("productNameFallback")}
                     </h3>
                     <p className="text-xs text-muted mt-0.5 font-medium">
                       ${Math.round(Number(item.product?.unit_price || 0))}
@@ -118,7 +123,7 @@ export default function CartDrawer() {
                     <button 
                       onClick={() => removeItem(item.id)}
                       className="text-muted hover:text-rose-500 p-1.5 transition-colors group/delete cursor-pointer"
-                      title="Remove Item"
+                      title={t("removeItem")}
                     >
                       <svg className="w-4 h-4 group-hover/delete:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -134,17 +139,17 @@ export default function CartDrawer() {
         {cartItems && cartItems.length > 0 && (
           <div className="p-6 bg-card border-t border-card-border">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-muted">Subtotal</span>
+              <span className="text-sm font-bold text-muted">{t("subtotal")}</span>
               <span className="text-xl font-black text-foreground tracking-tight">${Math.round(subTotal)}</span>
             </div>
             <p className="text-[10px] text-muted text-center mb-4">
-              Shipping and taxes calculated at checkout.
+              {t("shippingNote")}
             </p>
             <button 
               onClick={handleCheckoutClick}
               className="w-full flex items-center justify-center bg-primary text-white py-3.5 rounded-xl font-bold text-sm shadow-md hover:bg-primary-hover transition-all active:scale-[0.98] cursor-pointer"
             >
-              Proceed to Checkout
+              {t("proceedToCheckout")}
             </button>
           </div>
         )}
@@ -156,16 +161,16 @@ export default function CartDrawer() {
             <div className="w-14 h-14 bg-primary-light rounded-full flex items-center justify-center text-primary text-2xl mb-4 font-black">
               🔒
             </div>
-            <h3 className="text-lg font-black text-foreground mb-2">Authentication Required</h3>
+            <h3 className="text-lg font-black text-foreground mb-2">{t("authRequired")}</h3>
             <p className="text-xs text-muted mb-6 leading-relaxed">
-              Please login first to proceed your order.
+              {t("loginPrompt")}
             </p>
             <div className="flex items-center gap-3 w-full">
               <button
                 onClick={() => setShowLoginModal(false)}
                 className="flex-1 py-3 rounded-xl font-bold text-xs bg-background border border-card-border text-foreground hover:bg-card-border/20 transition-all cursor-pointer"
               >
-                Cancel
+                {t("cancel")}
               </button>
               <button
                 onClick={() => {
@@ -175,7 +180,7 @@ export default function CartDrawer() {
                 }}
                 className="flex-1 py-3 rounded-xl font-bold text-xs bg-primary text-white hover:bg-primary-hover transition-all cursor-pointer shadow-md"
               >
-                OK
+                {t("ok")}
               </button>
             </div>
           </div>

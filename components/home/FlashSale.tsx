@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useStoreSettings } from "@/store/useStoreSettings";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import AddToCartButton from "@/components/ui/AddToCartButton";
+// 🟢 Import next-intl hook
+import { useTranslations } from "next-intl";
 
 export default function FlashSale({
   products,
@@ -14,6 +16,9 @@ export default function FlashSale({
   products: any;
   isLoading: boolean;
 }) {
+  // 🟢 Initialize translations
+  const t = useTranslations("FlashSale");
+
   const { currencySymbol } = useStoreSettings();
   const [timeLeft, setTimeLeft] = useState({
     hours: 12,
@@ -59,7 +64,7 @@ export default function FlashSale({
         <div className="flex-1 w-full mb-1 lg:mb-0">
           <div className="flex items-center gap-2 sm:gap-3 w-full">
             <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
-              Flash Sale
+              {t("title")}
             </h2>
             <Zap
               size={20}
@@ -68,17 +73,17 @@ export default function FlashSale({
           </div>
 
           <p className="text-slate-500 text-[11px] sm:text-base font-medium mt-1 md:mt-2">
-            Limited time offers on handpicked premium choices
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="flex flex-row items-center gap-2 sm:gap-6 w-full lg:w-auto justify-between lg:justify-end">
           <div className="flex items-center gap-1.5 sm:gap-3 bg-card-border/30 border border-card-border px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl shrink-0">
             <span className="font-bold text-[9px] sm:text-[11px] text-muted uppercase tracking-widest hidden sm:inline-block">
-              Ends in
+              {t("endsIn")}
             </span>
             <span className="font-bold text-[9px] text-muted uppercase tracking-widest sm:hidden">
-              Ends
+              {t("ends")}
             </span>
             <div className="flex items-center gap-0.5 sm:gap-1.5 text-foreground font-black text-[10px] sm:text-sm">
               <div className="bg-card px-1 sm:px-2 py-0.5 sm:py-1 rounded sm:rounded-md min-w-[20px] sm:min-w-[32px] text-center border border-card-border">
@@ -100,7 +105,7 @@ export default function FlashSale({
             prefetch={true}
             className="flex lg:hidden xl:flex items-center gap-0.5 text-[10px] sm:text-xs font-bold text-primary hover:text-primary-hover transition-all group/link whitespace-nowrap"
           >
-            <span>View All</span>
+            <span>{t("viewAll")}</span>
             <svg
               className="w-3 h-3 sm:w-4 sm:h-4 transform group-hover/link:translate-x-1 transition-transform"
               fill="none"
@@ -232,8 +237,8 @@ export default function FlashSale({
                         </div>
                         <span className="text-[8px] sm:text-[10px] font-medium text-muted tracking-tight">
                           {product.inventory > 0
-                            ? `${product.inventory * 15} sold`
-                            : "Hot Deal"}
+                            ? `${product.inventory * 15} ${t("sold")}`
+                            : t("hotDeal")}
                         </span>
                       </div>
 
@@ -249,7 +254,7 @@ export default function FlashSale({
                           </span>
                         </div>
 
-                        {/* 🟢 Reusable Component with explicit responsive overrides */}
+                        {/* Reusable Component with explicit responsive overrides */}
                         <AddToCartButton
                           product={product}
                           className="!py-1.5 sm:!py-2.5 !text-[9px] sm:!text-xs"

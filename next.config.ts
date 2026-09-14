@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 const nextConfig: NextConfig = {
   images: {
@@ -11,18 +14,14 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "127.0.0.1",
       },
-      // 🟢 Added Cloudinary for permanent image hosting & production display
+      // Added Cloudinary for permanent image hosting & production display
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
       },
-      // add real domain when moved production
-      // {
-      //   protocol: "https",
-      //   hostname: "your-production-domain.com",
-      // },
     ],
   },
 };
 
-export default nextConfig;
+// Fix: Wrap nextConfig with withNextIntl
+export default withNextIntl(nextConfig);

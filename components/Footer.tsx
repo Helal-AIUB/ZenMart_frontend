@@ -3,8 +3,13 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/services/apiClient";
 import { MapPin, Phone, Mail } from "lucide-react";
+// 🟢 Import next-intl hook
+import { useTranslations } from "next-intl";
 
 export default function Footer() {
+  // 🟢 Initialize translations
+  const t = useTranslations("Footer");
+
   const { data: settingsData } = useQuery({
     queryKey: ["store_settings"],
     queryFn: async () => {
@@ -37,7 +42,7 @@ export default function Footer() {
             </Link>
             
             <p className="text-xs text-gray-400 max-w-sm leading-relaxed font-normal">
-              {settings.short_description || "Your one-stop destination for premium pet care products, top brands and unbeatable prices. Shop smart, live better."}
+              {settings.short_description || t("defaultDescription")}
             </p>
 
             {/* Dynamic Contact Details */}
@@ -62,7 +67,7 @@ export default function Footer() {
               )}
             </div>
 
-            {/* 🟢 SVGs used directly for Social Icons to bypass Lucide missing exports */}
+            {/* SVGs used directly for Social Icons to bypass Lucide missing exports */}
             <div className="flex items-center gap-3 mt-2">
               {settings.facebook_link && (
                 <a href={settings.facebook_link} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 cursor-pointer shadow-xs">
@@ -84,55 +89,55 @@ export default function Footer() {
 
           {/* Quick Links Section */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-sm font-extrabold tracking-wider uppercase text-white mb-1">Shop</h4>
+            <h4 className="text-sm font-extrabold tracking-wider uppercase text-white mb-1">{t("shop")}</h4>
             <ul className="flex flex-col gap-2.5 text-xs text-gray-400 font-medium">
-              <li><Link href="/products" className="hover:text-primary transition-colors">All Categories</Link></li>
-              <li><Link href="/products" className="hover:text-primary transition-colors">Best Sellers</Link></li>
-              <li><Link href="/products" className="hover:text-primary transition-colors">Flash Sale</Link></li>
-              <li><Link href="/products" className="hover:text-primary transition-colors">New Arrivals</Link></li>
-              <li><Link href="/products" className="hover:text-primary transition-colors">Brands</Link></li>
+              <li><Link href="/products" className="hover:text-primary transition-colors">{t("allCategories")}</Link></li>
+              <li><Link href="/products" className="hover:text-primary transition-colors">{t("bestSellers")}</Link></li>
+              <li><Link href="/products" className="hover:text-primary transition-colors">{t("flashSale")}</Link></li>
+              <li><Link href="/products" className="hover:text-primary transition-colors">{t("newArrivals")}</Link></li>
+              <li><Link href="/products" className="hover:text-primary transition-colors">{t("brands")}</Link></li>
             </ul>
           </div>
 
           <div className="flex flex-col gap-3">
-            <h4 className="text-sm font-extrabold tracking-wider uppercase text-white mb-1">Customer Service</h4>
+            <h4 className="text-sm font-extrabold tracking-wider uppercase text-white mb-1">{t("customerService")}</h4>
             <ul className="flex flex-col gap-2.5 text-xs text-gray-400 font-medium">
-              <li><Link href="#" className="hover:text-primary transition-colors">Track Order</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Returns & Exchanges</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Shipping Info</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">FAQs</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Contact Us</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("trackOrder")}</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("returnsExchanges")}</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("shippingInfo")}</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("faqs")}</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("contactUs")}</Link></li>
             </ul>
           </div>
 
           <div className="flex flex-col gap-3">
-            <h4 className="text-sm font-extrabold tracking-wider uppercase text-white mb-1">Company</h4>
+            <h4 className="text-sm font-extrabold tracking-wider uppercase text-white mb-1">{t("company")}</h4>
             <ul className="flex flex-col gap-2.5 text-xs text-gray-400 font-medium">
-              <li><Link href="#" className="hover:text-primary transition-colors">About Us</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Careers</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Press & Media</Link></li>
-              <li><Link href="#" className="hover:text-primary transition-colors">Become a Seller</Link></li>
-              <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("aboutUs")}</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("careers")}</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("pressMedia")}</Link></li>
+              <li><Link href="#" className="hover:text-primary transition-colors">{t("becomeSeller")}</Link></li>
+              <li><Link href="/blog" className="hover:text-primary transition-colors">{t("blog")}</Link></li>
             </ul>
           </div>
 
           {/* App Download Section */}
           <div className="lg:col-span-1 flex flex-col gap-4">
-            <h4 className="text-sm font-extrabold tracking-wider uppercase text-white mb-1">Download Our App</h4>
-            <p className="text-[11px] text-gray-400 leading-tight">Shop on the go with our mobile app</p>
+            <h4 className="text-sm font-extrabold tracking-wider uppercase text-white mb-1">{t("downloadApp")}</h4>
+            <p className="text-[11px] text-gray-400 leading-tight">{t("appDescription")}</p>
             <div className="flex flex-col gap-2">
               <div className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-white/20 transition-all">
                 <span className="text-sm">🍏</span>
                 <div className="flex flex-col">
-                  <span className="text-[8px] text-gray-300 leading-none">Download on the</span>
-                  <span className="text-[11px] font-bold text-white leading-tight">App Store</span>
+                  <span className="text-[8px] text-gray-300 leading-none">{t("downloadOnThe")}</span>
+                  <span className="text-[11px] font-bold text-white leading-tight">{t("appStore")}</span>
                 </div>
               </div>
               <div className="bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-white/20 transition-all">
                 <span className="text-sm">🤖</span>
                 <div className="flex flex-col">
-                  <span className="text-[8px] text-gray-300 leading-none">GET IT ON</span>
-                  <span className="text-[11px] font-bold text-white leading-tight">Google Play</span>
+                  <span className="text-[8px] text-gray-300 leading-none">{t("getItOn")}</span>
+                  <span className="text-[11px] font-bold text-white leading-tight">{t("googlePlay")}</span>
                 </div>
               </div>
             </div>
@@ -142,33 +147,33 @@ export default function Footer() {
         {/* Newsletter Subscription Row */}
         <div className="py-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-center border-b border-white/10 relative z-10">
           <div>
-            <h4 className="text-sm font-extrabold text-white mb-0.5">Stay Updated</h4>
-            <p className="text-xs text-gray-400">Subscribe to get special offers, free giveaways and early access to new arrivals.</p>
+            <h4 className="text-sm font-extrabold text-white mb-0.5">{t("stayUpdated")}</h4>
+            <p className="text-xs text-gray-400">{t("newsletterDesc")}</p>
           </div>
           <div className="flex gap-2">
             <input 
               type="email" 
-              placeholder="Enter your email" 
+              placeholder={t("emailPlaceholder")} 
               className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-primary flex-1 transition-colors"
             />
             <button className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-primary-hover transition-colors shadow-md cursor-pointer shrink-0">
-              Subscribe
+              {t("subscribe")}
             </button>
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col lg:flex-row items-center justify-between gap-6 text-xs text-gray-400 font-medium relative z-10">
-          <p>© {currentYear} {storeName}. All rights reserved.</p>
+          <p>© {currentYear} {storeName}. {t("allRightsReserved")}</p>
 
           <div className="flex items-center gap-6 flex-wrap justify-center">
-            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link>
-            <Link href="/cookies" className="hover:text-primary transition-colors">Cookies Policy</Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors">{t("privacyPolicy")}</Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">{t("termsConditions")}</Link>
+            <Link href="/cookies" className="hover:text-primary transition-colors">{t("cookiesPolicy")}</Link>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap justify-center">
-            <span className="text-[11px] text-gray-400 mr-1">We Accept</span>
+            <span className="text-[11px] text-gray-400 mr-1">{t("weAccept")}</span>
             <span className="bg-white text-blue-800 px-2.5 py-1 rounded text-[10px] font-black tracking-tighter shadow-sm">VISA</span>
             <span className="bg-white text-orange-600 px-2 py-1 rounded text-[10px] font-black tracking-tighter shadow-sm">mastercard</span>
             <span className="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-black tracking-tighter shadow-sm">AMEX</span>

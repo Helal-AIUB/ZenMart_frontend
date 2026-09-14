@@ -9,6 +9,8 @@ import { useCartStore } from "../store/useCartStore";
 import { apiClient } from "@/services/apiClient";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import WishlistDrawer from "@/components/WishlistDrawer";
+// Import next-intl hook
+import { useTranslations } from "next-intl";
 
 export default function Navbar({ 
   initialCategories = [], 
@@ -18,6 +20,9 @@ export default function Navbar({
   initialSettings?: any;
 }) {
   const router = useRouter();
+  // Initialize translations
+  const t = useTranslations("Navbar");
+  
   const { openCart, cartItems, cartId, fetchCart } = useCartStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -31,7 +36,7 @@ export default function Navbar({
   const { wishlistItems, openWishlist } = useWishlistStore();
   const wishlistCount = wishlistItems.length;
 
-  // 🟢 Data comes directly from Server (ISR), so no loading state is needed
+  // Data comes directly from Server (ISR), so no loading state is needed
   const safeCategories = Array.isArray(initialCategories) ? initialCategories : [];
   const storeName = initialSettings?.store_name || "Petora BD";
 
@@ -135,7 +140,7 @@ export default function Navbar({
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="bg-transparent text-xs lg:text-sm font-medium text-text-gray focus:outline-none cursor-pointer appearance-none pr-5 lg:pr-6 max-w-[110px] lg:max-w-none truncate"
                 >
-                  <option value="">All Categories</option>
+                  <option value="">{t("allCategories")}</option>
                   {safeCategories.map((category: any) => (
                     <option key={category.id} value={category.id}>
                       {category.title}
@@ -156,7 +161,7 @@ export default function Navbar({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for products, brands and more..."
+                placeholder={t("searchPlaceholder")}
                 className="flex-1 bg-transparent border-none px-3 lg:px-4 text-xs lg:text-sm text-text-dark placeholder-text-light focus:outline-none focus:ring-0 h-full w-full min-w-0"
               />
               <button
@@ -171,25 +176,25 @@ export default function Navbar({
 
             <div className="hidden xl:flex items-center gap-6 text-sm font-medium text-text-gray lg:order-none">
               <Link href="/blog" className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
-                <BookOpen size={18} /> Blog
+                <BookOpen size={18} /> {t("blog")}
               </Link>
               <Link href="#" className="flex items-center gap-1.5 hover:text-primary transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
-                New Arrivals
-                <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-sm">NEW</span>
+                {t("newArrivals")}
+                <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-sm">{t("newBadge")}</span>
               </Link>
               <Link href="#" className="flex items-center gap-1.5 hover:text-primary transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                Brands
+                {t("brands")}
               </Link>
             </div>
 
             <div className="flex items-center gap-4 lg:gap-5 order-2 lg:order-none shrink-0">
-              <button onClick={openWishlist} className="relative text-text-dark hover:text-primary transition-colors group cursor-pointer" title="Wishlist">
+              <button onClick={openWishlist} className="relative text-text-dark hover:text-primary transition-colors group cursor-pointer" title={t("wishlist")}>
                 <svg className="w-5 h-5 lg:w-6 lg:h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
@@ -227,7 +232,7 @@ export default function Navbar({
                     )}
                   </div>
                   <div className="hidden md:flex items-center gap-1">
-                    <span className="text-sm font-bold text-text-dark leading-tight group-hover:text-primary transition-colors">Account</span>
+                    <span className="text-sm font-bold text-text-dark leading-tight group-hover:text-primary transition-colors">{t("account")}</span>
                     <svg className={`w-3 h-3 text-text-gray group-hover:text-primary transition-transform duration-200 ${isAccountOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -239,16 +244,16 @@ export default function Navbar({
                     {user ? (
                       <>
                         <Link href="/profile" onClick={() => setIsAccountOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-text-dark hover:bg-gray-50 hover:text-primary transition-colors">
-                          My Profile
+                          {t("myProfile")}
                         </Link>
                         <div className="border-t border-border-color my-1"></div>
                         <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors cursor-pointer">
-                          Logout
+                          {t("logout")}
                         </button>
                       </>
                     ) : (
                       <Link href="/signin" onClick={() => setIsAccountOpen(false)} className="block px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors text-center">
-                        Login
+                        {t("login")}
                       </Link>
                     )}
                   </div>
@@ -262,7 +267,7 @@ export default function Navbar({
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              All Categories
+              {t("allCategories")}
             </button>
 
             <nav className="flex items-center gap-5 lg:gap-7 font-medium text-text-gray flex-1 overflow-x-auto whitespace-nowrap hide-scroll-bar pb-1 lg:pb-0">

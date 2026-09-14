@@ -6,6 +6,8 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { useStoreSettings } from "@/store/useStoreSettings";
 import { PawPrint } from "lucide-react";
 import AddToCartButton from "@/components/ui/AddToCartButton";
+// 🟢 Import next-intl hook
+import { useTranslations } from "next-intl";
 
 export default function NewArrivals({
   initialCollections,
@@ -14,6 +16,9 @@ export default function NewArrivals({
   initialCollections: any[];
   groupedProducts: Record<string, any[]>;
 }) {
+  // 🟢 Initialize translations
+  const t = useTranslations("NewArrivals");
+
   // State to track selected category tab
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -29,7 +34,7 @@ export default function NewArrivals({
     }
   };
 
-  // 🟢 Instant Data Lookup: No API calls, no loading states!
+  // Instant Data Lookup: No API calls, no loading states!
   const displayProducts = groupedProducts[selectedCategory] || [];
   const validProducts = Array.isArray(displayProducts) ? displayProducts : [];
 
@@ -41,13 +46,13 @@ export default function NewArrivals({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 sm:gap-3 w-full">
             <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight truncate">
-              New Arrivals
+              {t("title")}
             </h2>
             <PawPrint className="w-5 h-5 md:w-7 md:h-7 text-green-500/80 fill-green-500/20 shrink-0" />
           </div>
 
           <p className="text-slate-500 text-[10px] sm:text-base font-medium mt-0.5 md:mt-2 truncate">
-            Explore the latest products just for you
+            {t("subtitle")}
           </p>
         </div>
 
@@ -60,7 +65,7 @@ export default function NewArrivals({
           prefetch={true}
           className="group flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-sm font-bold text-green-700 bg-green-50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full hover:bg-green-600 hover:text-white transition-all duration-300 shrink-0 relative z-50 cursor-pointer"
         >
-          <span>View All</span>
+          <span>{t("viewAll")}</span>
           <svg
             className="w-3 h-3 sm:w-4 sm:h-4 transform group-hover:translate-x-1 transition-transform"
             fill="none"
@@ -86,7 +91,7 @@ export default function NewArrivals({
               : "bg-card-border/40 text-muted hover:text-foreground border border-card-border"
           }`}
         >
-          All
+          {t("all")}
         </button>
         {Array.isArray(initialCollections) &&
           initialCollections.map((col: any) => (
@@ -130,7 +135,7 @@ export default function NewArrivals({
         >
           {validProducts.length === 0 ? (
             <div className="w-full text-center py-12 text-muted text-xs sm:text-sm">
-              No products found in this category.
+              {t("noProducts")}
             </div>
           ) : (
             validProducts.map((product: any) => {
@@ -216,8 +221,8 @@ export default function NewArrivals({
                       </div>
                       <span className="text-[8px] sm:text-[10px] font-medium text-muted tracking-tight">
                         {product.inventory > 0
-                          ? `${product.inventory} left`
-                          : "In Stock"}
+                          ? `${product.inventory} ${t("left")}`
+                          : t("inStock")}
                       </span>
                     </div>
 
