@@ -7,6 +7,8 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import Link from "next/link";
 import AddToCartButton from "@/components/ui/AddToCartButton";
+// 🟢 Import client-side translation hook
+import { useTranslations } from "next-intl";
 
 export default function ProductDetailsClient({ 
   product, 
@@ -15,6 +17,9 @@ export default function ProductDetailsClient({
   product: any;
   relatedProducts: any[];
 }) {
+  // 🟢 Initialize translations
+  const t = useTranslations("ProductDetails");
+
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
   const { currencySymbol } = useStoreSettings();
@@ -29,13 +34,13 @@ export default function ProductDetailsClient({
       <div className="max-w-[1440px] mx-auto px-4 py-20 text-center font-sans">
         <div className="bg-card border border-card-border p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-sm max-w-md mx-auto">
           <p className="text-sm font-bold text-rose-500 mb-2">
-            Product not found.
+            {t("productNotFound")}
           </p>
           <Link
             href="/"
             className="text-xs text-primary font-bold hover:underline"
           >
-            Back to Home
+            {t("backToHome")}
           </Link>
         </div>
       </div>
@@ -63,7 +68,7 @@ export default function ProductDetailsClient({
 
     setIsAdded(true);
     
-    toast.success(`${quantity}x ${product.title} added to cart`, {
+    toast.success(`${quantity}x ${product.title} ${t("addedToCartToast")}`, {
       style: {
         borderRadius: "12px",
         background: "var(--foreground)",
@@ -80,7 +85,7 @@ export default function ProductDetailsClient({
     }, 2000);
 
     addToCart(product, quantity).catch(() => {
-      toast.error("Something went wrong! Please try again.", {
+      toast.error(t("errorToast"), {
         style: {
           fontSize: "13px",
           borderRadius: "12px",
@@ -116,11 +121,11 @@ export default function ProductDetailsClient({
     <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 min-h-screen font-sans">
       <div className="mb-4 md:mb-6 text-[10px] md:text-xs font-semibold text-muted flex items-center gap-1.5 md:gap-2 flex-wrap">
         <Link href="/" className="hover:text-primary transition-colors">
-          Home
+          {t("home")}
         </Link>
         <span>/</span>
         <Link href="/products" className="hover:text-primary transition-colors">
-          Shop
+          {t("shop")}
         </Link>
         <span>/</span>
         <span className="text-foreground font-bold truncate max-w-[150px] sm:max-w-none">{product.title}</span>
@@ -133,7 +138,7 @@ export default function ProductDetailsClient({
             <div className="md:col-span-6 flex flex-col gap-3 md:gap-4">
               <div className="bg-[#f8f9fa] rounded-3xl md:rounded-[2rem] h-64 sm:h-[300px] md:h-[360px] flex items-center justify-center text-6xl md:text-7xl border border-card-border relative overflow-hidden group">
                 <span className="absolute top-3 left-3 md:top-4 md:left-4 bg-badge-red text-white text-[9px] md:text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm z-10">
-                  -27% OFF
+                  -27% {t("offBadge")}
                 </span>
 
                 <button
@@ -234,7 +239,7 @@ export default function ProductDetailsClient({
             <div className="md:col-span-6 flex flex-col justify-between">
               <div>
                 <span className="text-[9px] md:text-[10px] font-black text-primary uppercase tracking-[0.15em] bg-primary-light px-2.5 py-1 rounded-md inline-block mb-2 md:mb-3">
-                  PRODUCT ID: #{product.id}
+                  {t("productId")}: #{product.id}
                 </span>
 
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground mb-2 md:mb-3 leading-tight tracking-tight">
@@ -248,7 +253,7 @@ export default function ProductDetailsClient({
                     ))}
                   </div>
                   <span className="text-muted font-medium hover:text-primary transition-colors cursor-pointer">
-                    (24 Reviews)
+                    (24 {t("reviews")})
                   </span>
                 </div>
 
@@ -261,11 +266,11 @@ export default function ProductDetailsClient({
                   </span>
                   {product.inventory > 0 ? (
                     <span className="ml-auto text-emerald-600 font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded-md md:rounded-lg text-[9px] md:text-[11px] bg-emerald-50 border border-emerald-100">
-                      In Stock ({product.inventory})
+                      {t("inStock")} ({product.inventory})
                     </span>
                   ) : (
                     <span className="ml-auto text-rose-500 font-bold px-2 py-0.5 md:px-2.5 md:py-1 rounded-md md:rounded-lg text-[9px] md:text-[11px] bg-rose-50 border border-rose-100">
-                      Out of Stock
+                      {t("outOfStock")}
                     </span>
                   )}
                 </div>
@@ -273,29 +278,29 @@ export default function ProductDetailsClient({
                 <p className="text-muted text-[11px] sm:text-sm mb-4 md:mb-6 leading-relaxed line-clamp-4 sm:line-clamp-none">
                   {product.description
                     ? product.description
-                    : "volutpat in congue etiam justo etiam pretium iaculis justo in hac habitasse platea dictumst etiam faucibus."}
+                    : t("fallbackDescription")}
                 </p>
 
                 <div className="grid grid-cols-3 gap-1.5 md:gap-2 p-2 md:p-3 rounded-xl md:rounded-2xl bg-primary-light/40 border border-card-border mb-4 md:mb-6">
                   <div className="flex flex-col">
-                    <span className="text-[8px] md:text-[10px] font-extrabold text-foreground">Free Shipping</span>
-                    <span className="text-[7px] md:text-[9px] text-muted">Orders over $50</span>
+                    <span className="text-[8px] md:text-[10px] font-extrabold text-foreground">{t("freeShipping")}</span>
+                    <span className="text-[7px] md:text-[9px] text-muted">{t("ordersOver")}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[8px] md:text-[10px] font-extrabold text-foreground">30 Days Returns</span>
-                    <span className="text-[7px] md:text-[9px] text-muted">Hassle free returns</span>
+                    <span className="text-[8px] md:text-[10px] font-extrabold text-foreground">{t("daysReturns")}</span>
+                    <span className="text-[7px] md:text-[9px] text-muted">{t("hassleFree")}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[8px] md:text-[10px] font-extrabold text-foreground">Secure Payment</span>
-                    <span className="text-[7px] md:text-[9px] text-muted">100% secure checkout</span>
+                    <span className="text-[8px] md:text-[10px] font-extrabold text-foreground">{t("securePayment")}</span>
+                    <span className="text-[7px] md:text-[9px] text-muted">{t("secureCheckout")}</span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5 md:gap-2 hidden sm:flex">
                   <h4 className="text-[10px] md:text-xs font-black uppercase text-foreground tracking-wider mb-0.5 md:mb-1">
-                    Key Features
+                    {t("keyFeatures")}
                   </h4>
-                  {["High quality product", "Durable and reliable", "Premium materials", "1 Year warranty"].map((feat, idx) => (
+                  {[t("feat1"), t("feat2"), t("feat3"), t("feat4")].map((feat, idx) => (
                     <div key={idx} className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-muted font-medium">
                       <svg className="w-3 h-3 md:w-3.5 md:h-3.5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -312,14 +317,14 @@ export default function ProductDetailsClient({
           <div className="bg-card rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-card-border p-5 sm:p-6 md:p-8">
             <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 md:pb-4 border-b border-card-border">
               <h3 className="text-sm md:text-base font-black text-foreground uppercase tracking-wider">
-                Similar Products
+                {t("similarProducts")}
               </h3>
               {product.collection && (
                 <Link
                   href={`/products?collection_id=${product.collection}`}
                   className="text-[10px] md:text-xs font-bold text-primary hover:underline"
                 >
-                  View all
+                  {t("viewAll")}
                 </Link>
               )}
             </div>
@@ -367,7 +372,7 @@ export default function ProductDetailsClient({
               </div>
             ) : (
               <p className="text-[10px] md:text-xs text-muted py-4 md:py-6 text-center font-medium">
-                No similar products found.
+                {t("noSimilarProducts")}
               </p>
             )}
           </div>
@@ -376,12 +381,12 @@ export default function ProductDetailsClient({
         <div className="lg:col-span-4 flex flex-col gap-4 md:gap-6 mt-4 lg:mt-0">
           <div className="bg-card rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] border border-card-border p-5 sm:p-6 sticky top-24 md:top-28">
             <h3 className="text-xs md:text-sm font-black text-foreground mb-3 md:mb-4 pb-2 md:pb-3 border-b border-card-border uppercase tracking-wider">
-              Purchase Options
+              {t("purchaseOptions")}
             </h3>
 
             <div className="flex flex-col gap-1.5 md:gap-2 mb-4">
               <span className="text-[10px] md:text-xs font-bold text-muted uppercase tracking-wider">
-                Quantity
+                {t("quantity")}
               </span>
               <div className="flex items-center justify-between bg-[#f8f9fa] border border-card-border rounded-[1rem] md:rounded-2xl p-1 shadow-2xs">
                 <button
@@ -410,7 +415,7 @@ export default function ProductDetailsClient({
 
             <div className="flex items-center justify-between mb-4 md:mb-6 p-2.5 md:p-3 rounded-xl md:rounded-2xl bg-gray-50 border border-card-border">
               <span className="text-[10px] md:text-xs text-muted font-bold uppercase tracking-wider">
-                Total Price
+                {t("totalPrice")}
               </span>
               <span className="text-lg md:text-xl font-black text-foreground">
                 ${currentPrice * quantity}
@@ -434,20 +439,20 @@ export default function ProductDetailsClient({
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
-                    Added!
+                    {t("added")}
                   </>
                 ) : (
                   <>
                     <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    {product.inventory > 0 ? "Add to Cart" : "Out of Stock"}
+                    {product.inventory > 0 ? t("addToCart") : t("outOfStock")}
                   </>
                 )}
               </button>
 
               <button className="w-full py-3 md:py-3.5 rounded-xl md:rounded-2xl font-black text-[11px] md:text-xs tracking-wide bg-card border border-card-border text-foreground hover:bg-primary-light hover:text-primary transition-all shadow-2xs flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer">
-                ⚡ Buy Now
+                ⚡ {t("buyNow")}
               </button>
             </div>
           </div>

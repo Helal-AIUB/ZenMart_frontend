@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useStoreSettings } from "@/store/useStoreSettings";
 import AddToCartButton from "@/components/ui/AddToCartButton";
+import { useTranslations } from "next-intl";
 
 export default function ProductsClient({
   initialData,
@@ -12,6 +13,7 @@ export default function ProductsClient({
   initialData: any;
   currentPage: number;
 }) {
+  const t = useTranslations("Products");
   const { currencySymbol } = useStoreSettings();
   const router = useRouter();
 
@@ -22,7 +24,6 @@ export default function ProductsClient({
   const pageSize = 10;
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  // 🟢 Server-driven pagination handler
   const handlePageChange = (newPage: number) => {
     router.push(`/products?page=${newPage}`);
   };
@@ -30,10 +31,7 @@ export default function ProductsClient({
   return (
     <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 min-h-screen font-sans">
       <div className="flex items-center justify-between mb-6 sm:mb-8">
-        {/* <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">All Products</h1> */}
-        {/* <span className="text-[10px] sm:text-xs font-bold text-muted bg-card-border/40 px-3 py-1.5 rounded-xl border border-card-border whitespace-nowrap"> */}
-        {/* Total: {totalCount} */}
-        {/* </span> */}
+        {/* Header content commented out in original */}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5 md:gap-6">
@@ -117,8 +115,8 @@ export default function ProductsClient({
                   </div>
                   <span className="text-[9px] sm:text-[10px] font-medium text-muted tracking-tight">
                     {product.inventory > 0
-                      ? `${product.inventory * 15} sold`
-                      : "Hot Deal"}
+                      ? `${product.inventory * 15} ${t("sold")}`
+                      : t("hotDeal")}
                   </span>
                 </div>
 
@@ -142,18 +140,17 @@ export default function ProductsClient({
         })}
       </div>
 
-      {/* 🟢 Pagination controls updated to use URL navigation */}
       <div className="flex items-center justify-center gap-2 sm:gap-3 mt-8 sm:mt-12">
         <button
           onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
           disabled={currentPage === 1}
           className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs bg-card border border-card-border text-foreground md:hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
         >
-          Previous
+          {t("previous")}
         </button>
 
         <span className="text-[10px] sm:text-xs font-bold text-muted px-2 sm:px-4">
-          Page <span className="text-primary">{currentPage}</span> of {totalPages || 1}
+          {t("page")} <span className="text-primary">{currentPage}</span> {t("of")} {totalPages || 1}
         </span>
 
         <button
@@ -161,7 +158,7 @@ export default function ProductsClient({
           disabled={!initialData?.next}
           className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs bg-primary text-white md:hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs"
         >
-          Next
+          {t("next")}
         </button>
       </div>
     </main>

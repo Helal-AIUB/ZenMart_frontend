@@ -1,8 +1,11 @@
 import { Metadata } from "next";
 import ProductDetailsClient from "./ProductDetailsClient";
+// 🟢 Import server-side translation hook
+import { getTranslations } from "next-intl/server";
 
+// 🟢 Updated Props to include locale in params
 type Props = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 };
 
 // Shared fetcher for deduplication and ISR
@@ -43,8 +46,11 @@ async function getRelatedProducts(collectionId: string | number) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const product = await getProduct(resolvedParams.id);
+  
+  // 🟢 Fetch translations for metadata
+  const t = await getTranslations({ locale: resolvedParams.locale, namespace: "ProductDetails" });
 
-  if (!product) return { title: "Product Not Found | PetoraBD" };
+  if (!product) return { title: `${t("productNotFoundTitle")} | PetoraBD` };
 
   const imageUrl = product.images?.[0]?.image || "/og-image.jpg";
 
@@ -52,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${product.title} | PetoraBD`,
     description:
       product.description?.substring(0, 160) ||
-      `Buy ${product.title} at PetoraBD.`,
+      t("buyAtPetora", { title: product.title }),
     openGraph: {
       title: product.title,
       description: product.description?.substring(0, 160),
@@ -76,7 +82,6 @@ export default async function ProductDetailsPage({ params }: Props) {
     ? await getRelatedProducts(product.collection)
     : [];
 
-  // 🟢 Pass data to the Client Component
   return (
     <ProductDetailsClient product={product} relatedProducts={relatedProducts} />
   );

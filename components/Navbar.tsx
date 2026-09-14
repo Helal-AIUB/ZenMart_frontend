@@ -4,13 +4,13 @@ import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useCartStore } from "../store/useCartStore";
 import { apiClient } from "@/services/apiClient";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import WishlistDrawer from "@/components/WishlistDrawer";
-// Import next-intl hook
-import { useTranslations } from "next-intl";
+// 🟢 Import next-intl hooks
+import { useTranslations, useLocale } from "next-intl";
 
 export default function Navbar({ 
   initialCategories = [], 
@@ -20,8 +20,11 @@ export default function Navbar({
   initialSettings?: any;
 }) {
   const router = useRouter();
-  // Initialize translations
+  const pathname = usePathname();
+  
+  // 🟢 Initialize translations and locale
   const t = useTranslations("Navbar");
+  const locale = useLocale();
   
   const { openCart, cartItems, cartId, fetchCart } = useCartStore();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -31,16 +34,17 @@ export default function Navbar({
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false); // 🟢 Language Dropdown State
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null); // 🟢 Language Dropdown Ref
 
   const { wishlistItems, openWishlist } = useWishlistStore();
   const wishlistCount = wishlistItems.length;
 
-  // Data comes directly from Server (ISR), so no loading state is needed
   const safeCategories = Array.isArray(initialCategories) ? initialCategories : [];
   const storeName = initialSettings?.store_name || "Petora BD";
 
-  // User auth remains Client-side because it depends on the browser's local token
   const { data: user } = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
@@ -70,6 +74,10 @@ export default function Navbar({
     const handleOutsideClick = (event: any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsAccountOpen(false);
+      }
+      // 🟢 Close language dropdown on outside click
+      if (langRef.current && !langRef.current.contains(event.target)) {
+        setIsLangOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
@@ -108,6 +116,16 @@ export default function Navbar({
     } else {
       router.push(`/products`);
     }
+  };
+
+  // 🟢 Language Switcher Logic
+  const switchLanguage = (newLocale: string) => {
+    setIsLangOpen(false);
+    if (locale === newLocale) return;
+    
+    // Replace the current locale in the URL with the new one
+    const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
+    router.push(newPath);
   };
 
   const totalItems = cartItems?.reduce((total: number, item: any) => total + item.quantity, 0) || 0;
@@ -174,16 +192,10 @@ export default function Navbar({
               </button>
             </form>
 
+            {/* 🟢 Removed "New Arrivals" and kept Blog & Brands side by side */}
             <div className="hidden xl:flex items-center gap-6 text-sm font-medium text-text-gray lg:order-none">
               <Link href="/blog" className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
                 <BookOpen size={18} /> {t("blog")}
-              </Link>
-              <Link href="#" className="flex items-center gap-1.5 hover:text-primary transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-                {t("newArrivals")}
-                <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-sm">{t("newBadge")}</span>
               </Link>
               <Link href="#" className="flex items-center gap-1.5 hover:text-primary transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +205,46 @@ export default function Navbar({
               </Link>
             </div>
 
-            <div className="flex items-center gap-4 lg:gap-5 order-2 lg:order-none shrink-0">
+            <div className="flex items-center gap-3 sm:gap-4 lg:gap-5 order-2 lg:order-none shrink-0">
+              
+              {/* 🟢 Beautiful & Responsive Language Switcher */}
+              {/* 🟢 Beautiful & Responsive Language Switcher */}
+              <div className="relative" ref={langRef}>
+                <button 
+                  onClick={() => setIsLangOpen(!isLangOpen)} 
+                  className="flex items-center justify-center gap-1.5 text-text-dark hover:text-primary transition-colors group cursor-pointer bg-gray-50 hover:bg-gray-100 border border-border-color px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg shadow-sm"
+                  title="Switch Language"
+                >
+                  <img 
+                    src={locale === 'bn' ? 'https://flagcdn.com/w20/bd.png' : 'https://flagcdn.com/w20/us.png'} 
+                    alt={locale === 'bn' ? 'BD Flag' : 'US Flag'} 
+                    className="w-4 lg:w-5 h-auto rounded-[2px] transform group-hover:scale-110 transition-transform shadow-xs" 
+                  />
+                  <span className="hidden sm:inline-block text-[11px] lg:text-xs font-bold uppercase tracking-wide">
+                    {locale === 'bn' ? 'BN' : 'EN'}
+                  </span>
+                </button>
+
+                {isLangOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-36 bg-white border border-border-color rounded-xl shadow-xl py-1 z-50 animate-fadeIn">
+                    <button 
+                      onClick={() => switchLanguage('en')} 
+                      className={`w-full text-left px-4 py-2.5 text-xs lg:text-sm font-bold transition-colors flex items-center gap-2.5 ${locale === 'en' ? 'text-primary bg-primary-light/20' : 'text-text-dark hover:bg-gray-50 hover:text-primary'}`}
+                    >
+                      <img src="https://flagcdn.com/w20/us.png" alt="US" className="w-4 h-auto rounded-[2px] shadow-xs" /> 
+                      English
+                    </button>
+                    <button 
+                      onClick={() => switchLanguage('bn')} 
+                      className={`w-full text-left px-4 py-2.5 text-xs lg:text-sm font-bold transition-colors flex items-center gap-2.5 ${locale === 'bn' ? 'text-primary bg-primary-light/20' : 'text-text-dark hover:bg-gray-50 hover:text-primary'}`}
+                    >
+                      <img src="https://flagcdn.com/w20/bd.png" alt="BD" className="w-4 h-auto rounded-[2px] shadow-xs" /> 
+                      বাংলা
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button onClick={openWishlist} className="relative text-text-dark hover:text-primary transition-colors group cursor-pointer" title={t("wishlist")}>
                 <svg className="w-5 h-5 lg:w-6 lg:h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />

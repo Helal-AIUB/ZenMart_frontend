@@ -1,9 +1,10 @@
-// components/ui/AddToCartButton.tsx
 "use client";
 
 import { useState } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import toast from "react-hot-toast";
+// 🟢 Import client-side translation hook
+import { useTranslations } from "next-intl";
 
 interface AddToCartButtonProps {
   product: any;
@@ -14,6 +15,9 @@ export default function AddToCartButton({
   product,
   className = "",
 }: AddToCartButtonProps) {
+  // 🟢 Initialize translations
+  const t = useTranslations("AddToCartButton");
+
   const { addToCart } = useCartStore();
   const [isAdded, setIsAdded] = useState(false);
 
@@ -24,7 +28,7 @@ export default function AddToCartButton({
     e.stopPropagation();
 
     if (isOutOfStock) {
-      toast.error("This product is out of stock.");
+      toast.error(t("outOfStockToast"));
       return;
     }
 
@@ -40,7 +44,7 @@ export default function AddToCartButton({
       const errorMessage =
         error.response?.data?.quantity?.[0] ||
         error.response?.data?.detail ||
-        "Failed to add to cart due to stock limits.";
+        t("errorFallback");
       toast.error(errorMessage);
     }
   };
@@ -72,12 +76,12 @@ export default function AddToCartButton({
               d="M5 13l4 4L19 7"
             />
           </svg>
-          Added!
+          {t("added")}
         </>
       ) : isOutOfStock ? (
-        "Out of Stock"
+        t("outOfStock")
       ) : (
-        "Add to Cart"
+        t("addToCart")
       )}
     </button>
   );
