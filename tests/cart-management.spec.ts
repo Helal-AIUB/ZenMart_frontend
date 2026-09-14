@@ -19,17 +19,19 @@ test.describe('Cart Management Flow (Update Quantity & Removal)', () => {
     const cartButton = page.locator('header').getByRole('button').filter({ has: page.locator('svg') }).nth(2); 
     await cartButton.click();
 
-    // 5. Verify that the shopping cart drawer is visible and the item is listed (no longer empty)
+    // 5. Verify that the shopping cart drawer is visible
     const cartHeading = page.getByRole('heading', { name: /Shopping Cart/i });
     await expect(cartHeading).toBeVisible({ timeout: 10000 });
 
-    // 6. Wait for the item to appear in the cart drawer before attempting to remove it
-    const removeButton = page.locator('button').filter({ hasText: /Remove|Delete|🗑️|X/i }).first();
+    // 6. Wait for the item to appear and target the remove button strictly
+    const removeButton = page.getByRole('button', { name: /Remove Item/i }).first();
     await expect(removeButton).toBeVisible({ timeout: 10000 });
+    
+    // Click the remove button
     await removeButton.click();
 
-    // 7. Verify that the cart is empty again
-    const emptyMessage = page.getByText(/Your cart is empty/i);
+    // 7. Verify that the cart is empty again (Scoping directly from 'page' instead of a slow wrapper)
+    const emptyMessage = page.getByText(/Your cart is empty/i).first();
     await expect(emptyMessage).toBeVisible({ timeout: 10000 });
   });
 
