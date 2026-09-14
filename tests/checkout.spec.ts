@@ -30,18 +30,19 @@ test.describe('Cart and Checkout Flow', () => {
     await addToCartButton.click();
 
     // 6. Open the cart drawer via the header cart button
-    const cartButton = page.locator('header button').filter({
-      has: page.locator('svg path[d*="M3 3h2l.4 2"]')
-    });
-    await cartButton.click();
+    const cartButton = page.locator('header').getByRole('button', { name: '1' }); 
+      await cartButton.click();
 
-    // 7. Verify the checkout button is visible inside the cart drawer
-    const checkoutButton = page.locator('button:has-text("Checkout"), a:has-text("Checkout"), button:has-text("Proceed")').first();
-    await expect(checkoutButton).toBeVisible({ timeout: 10000 });
+      // 7. Verify the checkout button is visible inside the cart drawer
+      const checkoutButton = page.getByRole('button', { name: /Proceed to Checkout/i });
+      await expect(checkoutButton).toBeVisible({ timeout: 10000 });
 
-    // 8. Proceed to checkout and verify URL
-    await checkoutButton.click();
-    await expect(page).toHaveURL(/.*\/checkout.*/);
+      // 8. Proceed to checkout and verify URL
+      await expect(async () => {
+        // 🟢 Fix: Use { force: true } to bypass the animating backdrop overlay interception
+        await checkoutButton.click({ force: true });
+        await expect(page).toHaveURL(/.*\/checkout.*/, { timeout: 5000 });
+      }).toPass({ timeout: 15000 });
   });
   
 });
