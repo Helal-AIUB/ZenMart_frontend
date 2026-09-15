@@ -3,14 +3,27 @@
 import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
-export default function WhatsAppWidget() {
+interface WhatsAppWidgetProps {
+  whatsappNumber?: string | null;
+}
+
+export default function WhatsAppWidget({ whatsappNumber }: WhatsAppWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const widgetRef = useRef<HTMLDivElement>(null);
 
-  const phoneNumber = "8801825358009"; // Replace with your actual WhatsApp number
-  const preFilledMessage =
-    "Hello Petora BD, I need some help regarding your products.";
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(preFilledMessage)}`;
+  if (!whatsappNumber) {
+    return null;
+  }
+
+  const preFilledMessage = "Hello Petora BD, I need some help regarding your products.";
+  
+  let sanitizedNumber = whatsappNumber.replace(/[^0-9]/g, "");
+  
+  if (sanitizedNumber.startsWith("01") && sanitizedNumber.length === 11) {
+    sanitizedNumber = "88" + sanitizedNumber;
+  }
+  
+  const whatsappUrl = `https://wa.me/${sanitizedNumber}?text=${encodeURIComponent(preFilledMessage)}`;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -27,7 +27,6 @@ export default function SettingsPage() {
     { id: "security", label: "Security", icon: ShieldCheck },
   ];
 
-  // 🟢 Fetch Settings with React Query for Instant Caching & Zero Loading Lag
   const { isLoading: loading } = useQuery({
     queryKey: ["admin_settings"],
     queryFn: async () => {
@@ -71,7 +70,6 @@ export default function SettingsPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-10 font-sans mt-4 sm:mt-6 px-3 sm:px-4 lg:px-6">
       
-      {/* Header */}
       <div className="bg-white p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Platform Settings</h1>
         <p className="text-[11px] sm:text-sm text-slate-500 mt-1 font-medium">
@@ -81,7 +79,6 @@ export default function SettingsPage() {
 
       <div className="flex flex-col lg:flex-row gap-5 sm:gap-6 lg:gap-8 items-start">
         
-        {/* 🟢 Responsive Sidebar Tabs (Horizontal scroll on mobile, vertical on desktop) */}
         <div className="w-full lg:w-64 shrink-0 flex lg:flex-col gap-2 bg-white p-2.5 sm:p-3 rounded-2xl shadow-sm border border-slate-100 overflow-x-auto custom-scrollbar">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -107,7 +104,6 @@ export default function SettingsPage() {
           })}
         </div>
 
-        {/* Content Area */}
         <div className="flex-1 w-full bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 p-4 sm:p-6 md:p-8 overflow-hidden min-h-[350px] sm:min-h-[400px]">
           <AnimatePresence mode="wait">
             <motion.div
@@ -118,7 +114,7 @@ export default function SettingsPage() {
               transition={{ duration: 0.2 }}
               className="space-y-5 sm:space-y-6"
             >
-              {/* 🟢 General Store Info Tab */}
+              
               {activeTab === "general" && (
                 <div className="space-y-4 sm:space-y-5">
                   <h2 className="text-base sm:text-lg font-bold text-slate-800 border-b border-slate-100 pb-2.5">
@@ -153,7 +149,6 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {/* Currency Dropdown */}
                   <div>
                     <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Currency Symbol
@@ -238,17 +233,28 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* 🟢 Social Media Links Tab */}
               {activeTab === "social" && (
                 <div className="space-y-4 sm:space-y-5">
                   <h2 className="text-base sm:text-lg font-bold text-slate-800 border-b border-slate-100 pb-2.5">
-                    Social Media Links
+                    Social Media & Contact Links
                   </h2>
                   <p className="text-[11px] sm:text-xs text-slate-500 mb-4">
-                    Leave fields blank to hide the respective social icons from the footer.
+                    Update your social URLs and WhatsApp number here.
                   </p>
 
                   <div className="space-y-3.5 sm:space-y-4">
+                    <div>
+                      <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        WhatsApp Number
+                      </label>
+                      <input
+                        name="whatsapp_number"
+                        value={formData.whatsapp_number || ""}
+                        onChange={handleChange}
+                        placeholder="e.g. 8801825358009"
+                        className="w-full mt-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
+                    </div>
                     <div>
                       <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                         Facebook URL
@@ -289,7 +295,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* 🟢 Shipping Tab */}
               {activeTab === "shipping" && (
                 <div className="space-y-4">
                   <h2 className="text-base sm:text-lg font-bold text-slate-800 border-b border-slate-100 pb-2.5">
@@ -324,7 +329,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* 🟢 Security Tab */}
               {activeTab === "security" && (
                 <div className="flex flex-col items-center justify-center py-12 text-slate-400 text-center">
                   <ShieldCheck size={40} className="mb-3 opacity-20 sm:w-12 sm:h-12" />
@@ -332,7 +336,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {/* Action Button */}
               <div className="pt-4 sm:pt-6 mt-6 border-t border-slate-100 flex justify-end">
                 <button
                   onClick={handleSave}
