@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, Calendar, PawPrint } from "lucide-react";
+// 🟢 Import translation hook
+import { useTranslations } from "next-intl";
 
 export default function HomeBlogSection({ articles }: { articles: any[] }) {
+  // 🟢 Initialize translations
+  const t = useTranslations("HomeBlogSection");
+
   // 🟢 Directly use the pre-fetched data
   const latestArticles = articles?.slice(0, 3) || [];
 
@@ -18,12 +23,12 @@ export default function HomeBlogSection({ articles }: { articles: any[] }) {
           <div className="flex-1 w-full">
             <div className="flex items-center gap-2 md:gap-3 w-full">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-green-700 tracking-tight whitespace-nowrap">
-                Expert Tips
+                {t("expertTips")}
               </h2>
               <PawPrint className="w-5 h-5 md:w-7 md:h-7 text-green-500/60 shrink-0" strokeWidth={2.5} />
             </div>
             <p className="text-slate-500 text-[11px] sm:text-base md:text-lg font-medium mt-1 md:mt-2">
-              Explore the latest pet care guides just for you
+              {t("subtitle")}
             </p>
           </div>
           
@@ -31,7 +36,7 @@ export default function HomeBlogSection({ articles }: { articles: any[] }) {
             href="/blog" 
             className="group flex items-center gap-1.5 text-xs sm:text-sm font-bold text-green-700 bg-green-50 px-3 py-1.5 md:px-4 md:py-2 rounded-full hover:bg-green-600 hover:text-white transition-all duration-300 w-fit shrink-0"
           >
-            View All <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
+            {t("viewAll")} <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
@@ -58,7 +63,7 @@ export default function HomeBlogSection({ articles }: { articles: any[] }) {
                 )}
                 <div className="absolute top-2 left-2 md:top-4 md:left-4">
                   <span className="px-2 py-1 md:px-3 md:py-1.5 bg-white/95 backdrop-blur-sm text-emerald-700 text-[8px] md:text-xs font-black uppercase tracking-wider rounded-md md:rounded-lg shadow-sm">
-                    {article.category_name || "Pet Care"}
+                    {article.category_name || t("petCareFallback")}
                   </span>
                 </div>
               </div>

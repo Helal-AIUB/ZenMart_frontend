@@ -150,5 +150,35 @@
     "added": "যোগ হয়েছে!",
     "outOfStock": "স্টক আউট",
     "addToCart": "কার্টে যোগ করুন"
+  },
+  "Blog": {
+    "badge": "পেটোরা বিডি ব্লগ",
+    "heroTitle": "এক্সপার্ট পেট কেয়ার টিপস, <br /> গাইড ও গল্প",
+    "heroSubtitle": "আপনার আদরের পোষা প্রাণীকে সুস্থ এবং হাসিখুশি রাখার জন্য প্রয়োজনীয় সবকিছু জানুন।",
+    "searchPlaceholder": "গাইড, টিপস বা আর্টিকেল খুঁজুন...",
+    "allArticles": "সব আর্টিকেল",
+    "noArticlesFound": "কোনো আর্টিকেল পাওয়া যায়নি",
+    "adjustSearch": "অনুগ্রহ করে নতুন কিছু লিখে খুঁজুন বা ক্যাটাগরি পরিবর্তন করুন।",
+    "petCareFallback": "পেট কেয়ার"
+  },
+  "ArticleDetails": {
+    "articleNotFoundTitle": "আর্টিকেলটি পাওয়া যায়নি",
+    "readOnPetora": "পেটোরা বিডি ব্লগে {title} পড়ুন।",
+    "blogSuffix": "ব্লগ",
+    "articleNotFound": "আর্টিকেলটি পাওয়া যায়নি",
+    "articleNotFoundDesc": "আপনি যে গাইডটি খুঁজছেন তা মুছে ফেলা হয়েছে অথবা বর্তমানে উপলব্ধ নেই।",
+    "backToBlog": "ব্লগে ফিরে যান",
+    "backToAllArticles": "সব আর্টিকেলে ফিরে যান",
+    "petCareFallback": "পেট কেয়ার",
+    "reads": "বার পঠিত",
+    "share": "শেয়ার করুন",
+    "writtenFor": "পেটোরা বিডি এর জন্য লেখা",
+    "shareArticle": "আর্টিকেলটি শেয়ার করুন"
+  },
+  "HomeBlogSection": {
+    "expertTips": "এক্সপার্ট টিপস",
+    "subtitle": "আপনার জন্য আমাদের লেটেস্ট পেট কেয়ার গাইডগুলো পড়ুন",
+    "viewAll": "সব দেখুন",
+    "petCareFallback": "পেট কেয়ার"
   }
 }

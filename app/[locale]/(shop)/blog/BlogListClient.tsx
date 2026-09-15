@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Search, Calendar, Eye, ArrowRight, BookOpen } from "lucide-react";
+// 🟢 Import client-side translation hook
+import { useTranslations } from "next-intl";
 
 export default function BlogListClient({
   initialArticles,
@@ -11,10 +13,13 @@ export default function BlogListClient({
   initialArticles: any[];
   initialCategories: any[];
 }) {
+  // 🟢 Initialize translations
+  const t = useTranslations("Blog");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // 🟢 Client-side filtering (Instant, no API calls)
+  // Client-side filtering (Instant, no API calls)
   const filteredArticles = initialArticles.filter((article: any) => {
     const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
@@ -25,7 +30,7 @@ export default function BlogListClient({
   return (
     <div className="min-h-screen bg-slate-50/50 font-sans pb-20">
       
-      {/* 🟢 Premium Hero Section */}
+      {/* Premium Hero Section */}
       <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
           <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white blur-3xl"></div>
@@ -34,13 +39,12 @@ export default function BlogListClient({
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-100 text-sm font-bold tracking-wider uppercase mb-6 border border-emerald-400/30">
-            <BookOpen size={16} /> Petora BD Blog
+            <BookOpen size={16} /> {t("badge")}
           </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-6 tracking-tight">
-            Expert Pet Care Tips, <br /> Guides & Stories
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-6 tracking-tight" dangerouslySetInnerHTML={{ __html: t("heroTitle") }}>
           </h1>
           <p className="text-lg text-emerald-100/80 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Discover everything you need to know about keeping your furry, feathered, or finned friends happy and healthy.
+            {t("heroSubtitle")}
           </p>
 
           {/* Search Bar */}
@@ -48,7 +52,7 @@ export default function BlogListClient({
             <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text" 
-              placeholder="Search for guides, tips, or articles..." 
+              placeholder={t("searchPlaceholder")} 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-4 text-slate-800 bg-white rounded-2xl focus:outline-none focus:ring-4 focus:ring-emerald-500/30 transition-all font-medium"
@@ -59,14 +63,14 @@ export default function BlogListClient({
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
         
-        {/* 🟢 Category Filter Pills */}
+        {/* Category Filter Pills */}
         {initialCategories.length > 0 && (
           <div className="flex flex-wrap items-center justify-center gap-3 mb-12 bg-white/80 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-200 w-fit mx-auto">
             <button 
               onClick={() => setSelectedCategory(null)}
               className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${selectedCategory === null ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
             >
-              All Articles
+              {t("allArticles")}
             </button>
             {initialCategories.map((cat: any) => (
               <button 
@@ -80,12 +84,12 @@ export default function BlogListClient({
           </div>
         )}
 
-        {/* 🟢 Articles Grid */}
+        {/* Articles Grid */}
         {filteredArticles.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
             <BookOpen size={64} className="mx-auto text-slate-200 mb-4" />
-            <h3 className="text-2xl font-bold text-slate-700 mb-2">No articles found</h3>
-            <p className="text-slate-500">Try adjusting your search or category filter.</p>
+            <h3 className="text-2xl font-bold text-slate-700 mb-2">{t("noArticlesFound")}</h3>
+            <p className="text-slate-500">{t("adjustSearch")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -104,7 +108,7 @@ export default function BlogListClient({
                   {/* Category Badge overlay */}
                   <div className="absolute top-4 left-4">
                     <span className="px-3 py-1.5 bg-white/90 backdrop-blur-sm text-emerald-700 text-xs font-black uppercase tracking-wider rounded-lg shadow-sm">
-                      {article.category_name || "Pet Care"}
+                      {article.category_name || t("petCareFallback")}
                     </span>
                   </div>
                 </div>

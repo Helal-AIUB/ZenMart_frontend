@@ -150,5 +150,35 @@
     "added": "Added!",
     "outOfStock": "Out of Stock",
     "addToCart": "Add to Cart"
+  },
+  "Blog": {
+    "badge": "Petora BD Blog",
+    "heroTitle": "Expert Pet Care Tips, <br /> Guides & Stories",
+    "heroSubtitle": "Discover everything you need to know about keeping your furry, feathered, or finned friends happy and healthy.",
+    "searchPlaceholder": "Search for guides, tips, or articles...",
+    "allArticles": "All Articles",
+    "noArticlesFound": "No articles found",
+    "adjustSearch": "Try adjusting your search or category filter.",
+    "petCareFallback": "Pet Care"
+  },
+  "ArticleDetails": {
+    "articleNotFoundTitle": "Article Not Found",
+    "readOnPetora": "Read {title} on PetoraBD Blog.",
+    "blogSuffix": "Blog",
+    "articleNotFound": "Article Not Found",
+    "articleNotFoundDesc": "The guide you are looking for does not exist or has been removed.",
+    "backToBlog": "Back to Blog",
+    "backToAllArticles": "Back to all articles",
+    "petCareFallback": "Pet Care",
+    "reads": "Reads",
+    "share": "Share",
+    "writtenFor": "Written for Petora BD",
+    "shareArticle": "Share this article"
+  },
+  "HomeBlogSection": {
+    "expertTips": "Expert Tips",
+    "subtitle": "Explore the latest pet care guides just for you",
+    "viewAll": "View All",
+    "petCareFallback": "Pet Care"
   }
 }

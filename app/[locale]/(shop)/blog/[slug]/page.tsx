@@ -1,11 +1,14 @@
 import { Metadata } from "next";
 import ArticleDetailsClient from "./ArticleDetailsClient";
+// 🟢 Import server-side translation hook
+import { getTranslations } from "next-intl/server";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  // 🟢 Include locale in params
+  params: Promise<{ slug: string; locale: string }>;
 };
 
-// 🟢 Unified fetcher for metadata and page content
+// Unified fetcher for metadata and page content
 async function getArticle(slug: string) {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
@@ -23,17 +26,20 @@ async function getArticle(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
   const article = await getArticle(resolvedParams.slug);
+  
+  // 🟢 Fetch translations for metadata
+  const t = await getTranslations({ locale: resolvedParams.locale, namespace: "ArticleDetails" });
     
-  if (!article) return { title: "Article Not Found | PetoraBD" };
+  if (!article) return { title: `${t("articleNotFoundTitle")} | PetoraBD` };
 
   const cleanDescription = article.content 
     ? article.content.replace(/<[^>]+>/g, '').substring(0, 150) + "..."
-    : `Read ${article.title} on PetoraBD Blog.`;
+    : t("readOnPetora", { title: article.title });
       
   const imageUrl = article.image || "/og-image.jpg";
 
   return {
-    title: `${article.title} | PetoraBD Blog`,
+    title: `${article.title} | PetoraBD ${t("blogSuffix")}`,
     description: cleanDescription,
     openGraph: {
       title: article.title,
@@ -56,6 +62,6 @@ export default async function ArticleDetailsPage({ params }: Props) {
   const resolvedParams = await params;
   const article = await getArticle(resolvedParams.slug);
   
-  // 🟢 Pass the fully fetched article to the client component
+  // Pass the fully fetched article to the client component
   return <ArticleDetailsClient article={article} />;
 }
