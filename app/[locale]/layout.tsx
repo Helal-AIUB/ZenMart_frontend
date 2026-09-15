@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import StoreInit from "@/components/StoreInit";
+import MetaPixel from "@/components/MetaPixel";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -51,6 +52,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body className={`${inter.variable} font-sans antialiased`}>
+        <MetaPixel />
         <StoreInit />
         {children}
       </body>
