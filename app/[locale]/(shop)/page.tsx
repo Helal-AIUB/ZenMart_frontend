@@ -1,4 +1,5 @@
 import HeroCarousel from '@/components/home/HeroCarousel';
+import TopReviewsSection from "@/components/home/TopReviewsSection";
 import TrustBadges from '@/components/home/TrustBadges';
 import FlashSale from '@/components/home/FlashSale';
 import NewArrivals from '@/components/home/NewArrivals';
@@ -88,6 +89,7 @@ export default async function Home() {
 
       {/* 🟢 Pass the fully fetched articles directly to the BlogSection */}
       <BlogSection articles={articles} />
+      <TopReviewsSection />
       <TrustBadges />
 
     </main>
