@@ -40,13 +40,15 @@ export default function WhatsAppWidget({ whatsappNumber }: WhatsAppWidgetProps) 
 
   return (
     <div
-      className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-[100] flex flex-col items-end"
+      // 🟢 ADDED: pointer-events-none to prevent invisible wrapper from blocking clicks
+      className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50 flex flex-col items-end pointer-events-none"
       ref={widgetRef}
     >
       <div
+        // 🟢 ADDED: pointer-events-auto when open so inside contents are clickable
         className={`mb-4 w-[calc(100vw-2.5rem)] sm:w-[340px] bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 origin-bottom-right border border-slate-100 ${
           isOpen
-            ? "scale-100 opacity-100 visible"
+            ? "scale-100 opacity-100 visible pointer-events-auto"
             : "scale-50 opacity-0 invisible pointer-events-none"
         }`}
       >
@@ -102,7 +104,8 @@ export default function WhatsAppWidget({ whatsappNumber }: WhatsAppWidgetProps) 
         </div>
       </div>
 
-      <div className="relative group">
+      {/* 🟢 ADDED: pointer-events-auto for the toggle button so it can be clicked */}
+      <div className="relative group pointer-events-auto">
         <div
           className={`absolute -top-12 right-0 bg-slate-800 text-white text-xs font-bold py-2 px-3 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-lg ${
             isOpen ? "hidden" : "hidden sm:block"
