@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import StoreInit from "@/components/StoreInit";
 import MetaPixel from "@/components/MetaPixel";
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -38,23 +39,50 @@ export const metadata: Metadata = {
   },
 };
 
-// 🟢 Fix: Accept params.locale and pass it to HTML tag
 export default async function LocaleLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>; // Update type to Promise
+  params: Promise<{ locale: string }>; 
 }) {
-  // Await the params to get the locale
   const { locale } = await params;
+  
+  // 🟢 Fix: Fetch Store Settings from backend to get tracking IDs dynamically
+  let gaId = null;
+  let pixelId = null;
+
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+    const res = await fetch(`${apiUrl}/store/settings/`, { 
+      next: { revalidate: 3600 } // Cache data for 1 hour to keep site fast
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      const settings = Array.isArray(data) ? data[0] : (data?.results?.[0] || data);
+      
+      if (settings) {
+        gaId = settings.google_analytics_id;
+        pixelId = settings.meta_pixel_id;
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch store settings for Tracking IDs:", error);
+  }
 
   return (
     <html lang={locale}>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <MetaPixel />
+        {/* 🟢 Fix: Only render MetaPixel if pixelId exists in Database */}
+        {pixelId && <MetaPixel pixelId={pixelId} />}
+        
         <StoreInit />
+        
         {children}
+        
+        {/* 🟢 Fix: Only render Google Analytics if gaId exists in Database */}
+        {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   );

@@ -24,7 +24,8 @@ export default function SettingsPage() {
     { id: "general", label: "Store Info", icon: Store },
     { id: "social", label: "Social Media", icon: LinkIcon },
     { id: "shipping", label: "Shipping Rates", icon: Truck },
-    { id: "security", label: "Security", icon: ShieldCheck },
+    // 🟢 Fix: Changed label from Security to Analytics & Tracking
+    { id: "security", label: "Analytics & Tracking", icon: ShieldCheck },
   ];
 
   const { isLoading: loading } = useQuery({
@@ -341,10 +342,42 @@ export default function SettingsPage() {
                 </div>
               )}
 
+              {/* 🟢 Fix: Settings UI for Analytics and Tracking */}
               {activeTab === "security" && (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-400 text-center">
-                  <ShieldCheck size={40} className="mb-3 opacity-20 sm:w-12 sm:h-12" />
-                  <p className="text-xs sm:text-sm font-medium">Advanced security settings coming soon.</p>
+                <div className="space-y-4 sm:space-y-5">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-800 border-b border-slate-100 pb-2.5">
+                    Analytics & Tracking IDs
+                  </h2>
+                  <p className="text-[11px] sm:text-xs text-slate-500 mb-4">
+                    Manage your third-party tracking IDs for Google Analytics and Meta Pixel.
+                  </p>
+
+                  <div className="space-y-3.5 sm:space-y-4">
+                    <div>
+                      <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        Google Analytics Measurement ID
+                      </label>
+                      <input
+                        name="google_analytics_id"
+                        value={formData.google_analytics_id || ""}
+                        onChange={handleChange}
+                        placeholder="e.g. G-XXXXXXXXXX"
+                        className="w-full mt-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        Meta Pixel ID
+                      </label>
+                      <input
+                        name="meta_pixel_id"
+                        value={formData.meta_pixel_id || ""}
+                        onChange={handleChange}
+                        placeholder="e.g. 123456789012345"
+                        className="w-full mt-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 

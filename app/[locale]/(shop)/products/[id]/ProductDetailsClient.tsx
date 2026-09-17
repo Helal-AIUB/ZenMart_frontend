@@ -8,6 +8,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import ProductReviews from "@/components/product/ProductReviews";
+import { sendGAEvent } from '@next/third-parties/google';
 
 export default function ProductDetailsClient({ 
   product, 
@@ -53,6 +54,21 @@ export default function ProductDetailsClient({
   const handleAddToCart = () => {
     if (inventory === 0) return;
     setIsAdded(true);
+
+    //  GA4 'add_to_cart' Event Tracking added here
+    sendGAEvent({
+      event: 'add_to_cart',
+      value: Number(product.unit_price) * quantity,
+      currency: 'BDT',
+      items: [
+        {
+          item_id: product.id,
+          item_name: product.title,
+          price: Number(product.unit_price),
+          quantity: quantity
+        }
+      ]
+    });
     
     toast.success(`${quantity}x ${product.title} ${t("addedToCartToast")}`, {
       style: { borderRadius: "12px", background: "var(--foreground)", color: "var(--card-bg)", fontSize: "13px", fontWeight: "500" },
