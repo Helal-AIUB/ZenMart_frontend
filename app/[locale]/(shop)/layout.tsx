@@ -6,14 +6,12 @@ import "@/app/globals.css";
 import { Toaster } from "react-hot-toast";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import WhatsAppWidget from "@/components/WhatsAppWidget";
+import ContactWidget from "@/components/ContactWidget";
 
 async function getStoreSettings() {
   try {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
     const res = await fetch(`${apiUrl}/store/settings/`, {
-      // next: { revalidate: 60 }
       cache: "no-store",
     });
 
@@ -43,7 +41,13 @@ export default async function ShopLayout({
         <CartDrawer />
         {children}
         <Footer />
-        <WhatsAppWidget whatsappNumber={settings?.whatsapp_number} />
+        <ContactWidget 
+          settings={{
+            whatsappNumber: settings?.whatsapp_number,
+            messengerLink: settings?.messenger_link,
+            phoneNumber: settings?.contact_phone,
+          }} 
+        />
       </ReactQueryProvider>
     </NextIntlClientProvider>
   );

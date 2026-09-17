@@ -239,7 +239,7 @@ export default function SettingsPage() {
                     Social Media & Contact Links
                   </h2>
                   <p className="text-[11px] sm:text-xs text-slate-500 mb-4">
-                    Update your social URLs and WhatsApp number here.
+                    Update your social URLs, WhatsApp number, and Messenger link here.
                   </p>
 
                   <div className="space-y-3.5 sm:space-y-4">
@@ -252,6 +252,18 @@ export default function SettingsPage() {
                         value={formData.whatsapp_number || ""}
                         onChange={handleChange}
                         placeholder="e.g. 8801825358009"
+                        className="w-full mt-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        Messenger URL
+                      </label>
+                      <input
+                        name="messenger_link"
+                        value={formData.messenger_link || ""}
+                        onChange={handleChange}
+                        placeholder="e.g. https://m.me/yourpage"
                         className="w-full mt-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                       />
                     </div>
