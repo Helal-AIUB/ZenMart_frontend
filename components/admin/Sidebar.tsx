@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { 
-  LayoutDashboard, ShoppingBag, Users, 
+  LayoutDashboard, LineChart, ShoppingBag, Users, 
   ShoppingCart, Bone, Settings, ChevronLeft, ChevronRight, TicketPercent 
 } from "lucide-react";
 import { clsx } from "clsx";
@@ -13,6 +13,7 @@ import { twMerge } from "tailwind-merge";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+  { name: "Analytics", icon: LineChart, path: "/admin/analytics" },
   { name: "Orders", icon: ShoppingCart, path: "/admin/orders" },
   { name: "Products", icon: ShoppingBag, path: "/admin/products" },
   { name: "Coupons", icon: TicketPercent, path: "/admin/coupons" },

@@ -13,7 +13,7 @@ export default function ArticleDetailsClient({ article }: { article: any }) {
   const t = useTranslations("ArticleDetails");
 
   const [viewAdded, setViewAdded] = useState(false);
-  const [currentViews, setCurrentViews] = useState(article?.views || 0);
+  const [currentViews, setCurrentViews] = useState(article?.ga4_views || 0);
 
   // Automatically Increment View Count (Client-side mutation)
   useEffect(() => {

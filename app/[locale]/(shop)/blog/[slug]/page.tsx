@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import ArticleDetailsClient from "./ArticleDetailsClient";
 // 🟢 Import server-side translation hook
 import { getTranslations } from "next-intl/server";
+// 🟢 Import GA4 analytics function
+import { getPageViews } from "@/services/analytics";
 
 type Props = {
   // 🟢 Include locale in params
@@ -61,6 +63,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ArticleDetailsPage({ params }: Props) {
   const resolvedParams = await params;
   const article = await getArticle(resolvedParams.slug);
+  
+  // 🟢 Google Analytics theke data fetch kore article object e add kora holo
+  if (article) {
+    const pagePath = `/${resolvedParams.locale}/blog/${resolvedParams.slug}`;
+    const ga4Views = await getPageViews(pagePath);
+    article.ga4_views = ga4Views;
+  }
   
   // Pass the fully fetched article to the client component
   return <ArticleDetailsClient article={article} />;
