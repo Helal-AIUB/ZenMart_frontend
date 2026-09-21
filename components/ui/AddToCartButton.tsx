@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import toast from "react-hot-toast";
-// 🟢 Import client-side translation hook
+// Import client-side translation hook
 import { useTranslations } from "next-intl";
 
 interface AddToCartButtonProps {
@@ -15,7 +15,7 @@ export default function AddToCartButton({
   product,
   className = "",
 }: AddToCartButtonProps) {
-  // 🟢 Initialize translations
+  //  Initialize translations
   const t = useTranslations("AddToCartButton");
 
   const { addToCart } = useCartStore();
@@ -31,6 +31,29 @@ export default function AddToCartButton({
       toast.error(t("outOfStockToast"));
       return;
     }
+
+    // GTM 'add_to_cart' DataLayer Event Start
+    if (typeof window !== "undefined") {
+      const globalWindow = window as any;
+      globalWindow.dataLayer = globalWindow.dataLayer || [];
+      globalWindow.dataLayer.push({ ecommerce: null });
+      globalWindow.dataLayer.push({
+        event: 'add_to_cart',
+        ecommerce: {
+          currency: 'BDT',
+          value: Number(product.unit_price), 
+          items: [
+            {
+              item_id: product.id,
+              item_name: product.title,
+              price: Number(product.unit_price),
+              quantity: 1
+            }
+          ]
+        }
+      });
+    }
+    // GTM 'add_to_cart' DataLayer Event End
 
     setIsAdded(true);
 
