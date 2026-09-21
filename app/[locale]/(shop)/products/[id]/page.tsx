@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import ProductDetailsClient from "./ProductDetailsClient";
-// 🟢 Import server-side translation hook
+// Import server-side translation hook
 import { getTranslations } from "next-intl/server";
 
-// 🟢 Updated Props to include locale in params
+// Updated Props to include locale in params
 type Props = {
   params: Promise<{ id: string; locale: string }>;
 };

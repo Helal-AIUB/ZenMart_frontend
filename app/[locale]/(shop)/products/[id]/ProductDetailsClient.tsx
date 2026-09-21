@@ -4,11 +4,11 @@ import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { useStoreSettings } from "@/store/useStoreSettings";
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import ProductReviews from "@/components/product/ProductReviews";
-import { sendGAEvent } from '@next/third-parties/google';
+// import { sendGAEvent } from '@next/third-parties/google';
 
 export default function ProductDetailsClient({ 
   product, 
@@ -25,6 +25,29 @@ export default function ProductDetailsClient({
 
   const { addToCart } = useCartStore();
   const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlistStore();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && product) {
+      const globalWindow = window as any;
+      globalWindow.dataLayer = globalWindow.dataLayer || [];
+      globalWindow.dataLayer.push({ ecommerce: null }); 
+      globalWindow.dataLayer.push({
+        event: "view_item",
+        ecommerce: {
+          currency: "BDT",
+          value: Number(product.unit_price),
+          items: [
+            {
+              item_id: product.id,
+              item_name: product.title,
+              price: Number(product.unit_price),
+              quantity: 1
+            }
+          ]
+        }
+      });
+    }
+  }, [product]);
 
   if (!product) {
     return (
@@ -55,20 +78,26 @@ export default function ProductDetailsClient({
     if (inventory === 0) return;
     setIsAdded(true);
 
-    //  GA4 'add_to_cart' Event Tracking added here
-    sendGAEvent({
-      event: 'add_to_cart',
-      value: Number(product.unit_price) * quantity,
-      currency: 'BDT',
-      items: [
-        {
-          item_id: product.id,
-          item_name: product.title,
-          price: Number(product.unit_price),
-          quantity: quantity
+    if (typeof window !== "undefined") {
+      const globalWindow = window as any;
+      globalWindow.dataLayer = globalWindow.dataLayer || [];
+      globalWindow.dataLayer.push({ ecommerce: null });
+      globalWindow.dataLayer.push({
+        event: 'add_to_cart',
+        ecommerce: {
+          currency: 'BDT',
+          value: Number(product.unit_price) * quantity,
+          items: [
+            {
+              item_id: product.id,
+              item_name: product.title,
+              price: Number(product.unit_price),
+              quantity: quantity
+            }
+          ]
         }
-      ]
-    });
+      });
+    }
     
     toast.success(`${quantity}x ${product.title} ${t("addedToCartToast")}`, {
       style: { borderRadius: "12px", background: "var(--foreground)", color: "var(--card-bg)", fontSize: "13px", fontWeight: "500" },
