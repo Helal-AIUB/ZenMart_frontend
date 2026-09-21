@@ -43,7 +43,9 @@ export default function SettingsPage() {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -70,16 +72,16 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 pb-10 font-sans mt-4 sm:mt-6 px-3 sm:px-4 lg:px-6">
-      
       <div className="bg-white p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Platform Settings</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
+          Platform Settings
+        </h1>
         <p className="text-[11px] sm:text-sm text-slate-500 mt-1 font-medium">
           Manage Petora BD configurations and preferences
         </p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-5 sm:gap-6 lg:gap-8 items-start">
-        
         <div className="w-full lg:w-64 shrink-0 flex lg:flex-col gap-2 bg-white p-2.5 sm:p-3 rounded-2xl shadow-sm border border-slate-100 overflow-x-auto custom-scrollbar">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -99,7 +101,7 @@ export default function SettingsPage() {
                   className={`sm:w-[18px] sm:h-[18px] ${isActive ? "text-emerald-600" : "text-slate-400"}`}
                 />
                 <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+                <span className="sm:hidden">{tab.label.split(" ")[0]}</span>
               </button>
             );
           })}
@@ -115,7 +117,6 @@ export default function SettingsPage() {
               transition={{ duration: 0.2 }}
               className="space-y-5 sm:space-y-6"
             >
-              
               {activeTab === "general" && (
                 <div className="space-y-4 sm:space-y-5">
                   <h2 className="text-base sm:text-lg font-bold text-slate-800 border-b border-slate-100 pb-2.5">
@@ -168,8 +169,18 @@ export default function SettingsPage() {
                         <option value="₹">Rupee (₹)</option>
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 pointer-events-none text-slate-400">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -240,7 +251,8 @@ export default function SettingsPage() {
                     Social Media & Contact Links
                   </h2>
                   <p className="text-[11px] sm:text-xs text-slate-500 mb-4">
-                    Update your social URLs, WhatsApp number, and Messenger link here.
+                    Update your social URLs, WhatsApp number, and Messenger link
+                    here.
                   </p>
 
                   <div className="space-y-3.5 sm:space-y-4">
@@ -349,7 +361,8 @@ export default function SettingsPage() {
                     Analytics & Tracking IDs
                   </h2>
                   <p className="text-[11px] sm:text-xs text-slate-500 mb-4">
-                    Manage your third-party tracking IDs for Google Analytics and Meta Pixel.
+                    Manage your third-party tracking IDs for Google Tag Manager,
+                    Google Analytics, and Meta Pixel.
                   </p>
 
                   <div className="space-y-3.5 sm:space-y-4">
@@ -374,6 +387,18 @@ export default function SettingsPage() {
                         value={formData.meta_pixel_id || ""}
                         onChange={handleChange}
                         placeholder="e.g. 123456789012345"
+                        className="w-full mt-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        Google Tag Manager ID
+                      </label>
+                      <input
+                        name="gtm_id"
+                        value={formData.gtm_id || ""}
+                        onChange={handleChange}
+                        placeholder="e.g. GTM-XXXXXXX"
                         className="w-full mt-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
                       />
                     </div>

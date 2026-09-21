@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import StoreInit from "@/components/StoreInit";
 import MetaPixel from "@/components/MetaPixel";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -58,10 +58,10 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  // 🟢 Fix: Fetch Store Settings from backend to get tracking IDs dynamically
+  // Fix: Fetch Store Settings from backend to get tracking IDs dynamically
   let gaId = null;
   let pixelId = null;
-
+  let gtmId = null;
   try {
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
@@ -78,6 +78,7 @@ export default async function LocaleLayout({
       if (settings) {
         gaId = settings.google_analytics_id;
         pixelId = settings.meta_pixel_id;
+        gtmId = settings.gtm_id;
       }
     }
   } catch (error) {
@@ -97,6 +98,7 @@ export default async function LocaleLayout({
 
         {/* Fix: Only render Google Analytics if gaId exists in Database */}
         {gaId && <GoogleAnalytics gaId={gaId} />}
+        {gtmId && <GoogleTagManager gtmId={gtmId} />}
       </body>
     </html>
   );
