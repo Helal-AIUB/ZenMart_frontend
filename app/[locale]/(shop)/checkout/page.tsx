@@ -34,6 +34,45 @@ export default function CheckoutPage() {
     firstName: "", lastName: "", street: "", city: "", zipCode: "", phone: ""
   });
 
+  const subTotal = cartItems?.reduce((total: number, item: any) => {
+    const price = Number(item.product?.unit_price || item.unit_price || 0);
+    return total + (price * item.quantity);
+  }, 0) || 0;
+
+  const hasSelectedCity = formData.city !== "";
+  const isInsideDhaka = formData.city === "Dhaka";
+  const shippingCost = settings && hasSelectedCity
+    ? (isInsideDhaka ? Number(settings.delivery_charge_inside) : Number(settings.delivery_charge_outside))
+    : 0;
+    
+  const grandTotal = Math.max(0, subTotal + shippingCost - discountAmount);
+  const totalItemsCount = cartItems?.reduce((acc: number, item: any) => acc + item.quantity, 0) || 0;
+
+  // 🟢 GTM DataLayer: begin_checkout Event Start
+  useEffect(() => {
+    if (typeof window !== "undefined" && cartItems && cartItems.length > 0) {
+      const globalWindow = window as any;
+      const gtmItems = cartItems.map((item: any) => ({
+        item_id: item.product?.id || item.id,
+        item_name: item.product?.title || "Unknown Product",
+        price: Number(item.product?.unit_price || item.unit_price || 0),
+        quantity: item.quantity
+      }));
+
+      globalWindow.dataLayer = globalWindow.dataLayer || [];
+      globalWindow.dataLayer.push({ ecommerce: null }); 
+      globalWindow.dataLayer.push({
+        event: "begin_checkout",
+        ecommerce: {
+          currency: "BDT",
+          value: subTotal,
+          items: gtmItems
+        }
+      });
+    }
+  }, [cartItems, subTotal]); // Only runs when cart items are loaded
+  // 🟢 GTM DataLayer: begin_checkout Event End
+
   useEffect(() => {
     // SessionStorage used as simple cache to speed up re-visits
     const fetchCheckoutData = async () => {
@@ -60,20 +99,6 @@ export default function CheckoutPage() {
     };
     fetchCheckoutData();
   }, [router]);
-
-  const subTotal = cartItems?.reduce((total: number, item: any) => {
-    const price = Number(item.product?.unit_price || item.unit_price || 0);
-    return total + (price * item.quantity);
-  }, 0) || 0;
-
-  const hasSelectedCity = formData.city !== "";
-  const isInsideDhaka = formData.city === "Dhaka";
-  const shippingCost = settings && hasSelectedCity
-    ? (isInsideDhaka ? Number(settings.delivery_charge_inside) : Number(settings.delivery_charge_outside))
-    : 0;
-    
-  const grandTotal = Math.max(0, subTotal + shippingCost - discountAmount);
-  const totalItemsCount = cartItems?.reduce((acc: number, item: any) => acc + item.quantity, 0) || 0;
 
   const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
@@ -114,6 +139,33 @@ export default function CheckoutPage() {
         payment_method: paymentMethod,
         coupon_code: appliedCoupon || "" 
       });
+
+      // 🟢 GTM DataLayer: purchase Event Start
+      if (typeof window !== "undefined") {
+        const globalWindow = window as any;
+        const gtmItems = cartItems.map((item: any) => ({
+          item_id: item.product?.id || item.id,
+          item_name: item.product?.title || "Unknown Product",
+          price: Number(item.product?.unit_price || item.unit_price || 0),
+          quantity: item.quantity
+        }));
+
+        globalWindow.dataLayer = globalWindow.dataLayer || [];
+        globalWindow.dataLayer.push({ ecommerce: null });
+        globalWindow.dataLayer.push({
+          event: "purchase",
+          ecommerce: {
+            transaction_id: res.data.id || res.data.order_id || Date.now().toString(), // Backup transaction ID if API doesn't return one
+            value: grandTotal,
+            tax: 0,
+            shipping: shippingCost,
+            currency: "BDT",
+            coupon: appliedCoupon || "",
+            items: gtmItems
+          }
+        });
+      }
+      // 🟢 GTM DataLayer: purchase Event End
 
       if (clearCart) clearCart();
       if (typeof window !== 'undefined') localStorage.removeItem('cart_id');
