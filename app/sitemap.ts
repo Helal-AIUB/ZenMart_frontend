@@ -1,19 +1,19 @@
 import { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://zenmart-ecommerce1.vercel.app";
+  
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-  // 1. static page list
   const staticRoutes: MetadataRoute.Sitemap = [
     {
-      url: `${siteUrl}`,
+      url: `${siteUrl}/en`,
       lastModified: new Date(),
       changeFrequency: "daily",
-      priority: 1.0, // Homepage most important
+      priority: 1.0, 
     },
     {
-      url: `${siteUrl}/products`,
+      url: `${siteUrl}/en/products`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
@@ -21,9 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    // 2. backend product fetch
     const res = await fetch(`${apiUrl}/store/products/`, {
-      next: { revalidate: 3600 }, // cache update every 1 hour
+      next: { revalidate: 3600 }, 
     });
     
     if (!res.ok) return staticRoutes;
@@ -31,9 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const data = await res.json();
     const products = data.results || data || [];
 
-    // making dynamic url for every products
     const dynamicRoutes: MetadataRoute.Sitemap = products.map((product: any) => ({
-      url: `${siteUrl}/products/${product.id}`,
+      url: `${siteUrl}/en/products/${product.id}`,
       lastModified: new Date(product.last_update || new Date()), 
       changeFrequency: "weekly",
       priority: 0.8, 
