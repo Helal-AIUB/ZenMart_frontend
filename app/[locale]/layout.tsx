@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "@/app/globals.css";
 import StoreInit from "@/components/StoreInit";
 import MetaPixel from "@/components/MetaPixel";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 
 const inter = Inter({
@@ -61,7 +62,6 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  // Fix: Fetch Store Settings from backend to get tracking IDs dynamically
   let gaId = null;
   let pixelId = null;
   let gtmId = null;
@@ -69,7 +69,7 @@ export default async function LocaleLayout({
     const apiUrl =
       process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
     const res = await fetch(`${apiUrl}/store/settings/`, {
-      next: { revalidate: 3600 }, // Cache data for 1 hour to keep site fast
+      next: { revalidate: 3600 }, 
     });
 
     if (res.ok) {
@@ -89,19 +89,23 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale}>
-      <body className={`${inter.variable} font-sans antialiased`}>
-        {/* Fix: Only render MetaPixel if pixelId exists in Database */}
-        {pixelId && <MetaPixel pixelId={pixelId} />}
-        {/* <MetaPixel pixelId="1046551458209116" /> */}
+    <html lang={locale} suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased custom-scrollbar`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {pixelId && <MetaPixel pixelId={pixelId} />}
+          
+          <StoreInit />
 
-        <StoreInit />
+          {children}
 
-        {children}
-
-        {/* Fix: Only render Google Analytics if gaId exists in Database */}
-        {gaId && <GoogleAnalytics gaId={gaId} />}
-        {gtmId && <GoogleTagManager gtmId={gtmId} />}
+          {gaId && <GoogleAnalytics gaId={gaId} />}
+          {gtmId && <GoogleTagManager gtmId={gtmId} />}
+        </ThemeProvider>
       </body>
     </html>
   );

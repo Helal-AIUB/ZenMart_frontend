@@ -66,6 +66,27 @@
 
 }
 
+.dark {
+  --background: #111827;
+  --foreground: #f8f9fa;
+  
+  --primary: #0d9488;
+  --primary-hover: #0f766e;
+  --primary-light: #134e4a;
+  
+  --secondary: #064e3b;
+  
+  --text-dark: #f9fafb;
+  --text-gray: #d1d5db;
+  --text-light: #9ca3af;
+  --muted: #9ca3af;
+  
+  --card-bg: #1f2937;
+  --border-color: #374151;
+  --card-border: #374151;
+  --card-border-hover: #0d9488;
+}
+
 /* 1. Satoshi Font Setup (Updated for OTF Format) */
 @font-face {
   font-family: 'Satoshi';
@@ -154,3 +175,5 @@ body {
     @apply relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-bold rounded-lg text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 cursor-pointer;
   }
 }
+
+@custom-variant dark (&:is(.dark *));

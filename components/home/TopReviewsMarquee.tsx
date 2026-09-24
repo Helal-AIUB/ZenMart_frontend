@@ -49,12 +49,12 @@ export default function TopReviewsMarquee({ reviews }: { reviews: Review[] }) {
           return (
             <div
               key={`${review.id}-${idx}`}
-              // 🟢 Fix: Mobile a width 260px kora hoyeche, Tobe Desktop e original 380px e thakbe
-              className="w-[260px] md:w-[380px] bg-white rounded-[2rem] p-6 sm:p-8 border border-card-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-300 relative flex flex-col shrink-0"
+              // 🟢 Changed bg-white to bg-card
+              className="w-[260px] md:w-[380px] bg-card rounded-[2rem] p-6 sm:p-8 border border-card-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:border-card-border-hover transition-all duration-300 relative flex flex-col shrink-0"
             >
               <Quote 
                 size={40} 
-                className="absolute top-6 right-6 text-slate-100 rotate-180" 
+                className="absolute top-6 right-6 text-border-color rotate-180" 
               />
               
               <div className="flex items-center gap-1 mb-4 text-yellow-400">
@@ -63,17 +63,18 @@ export default function TopReviewsMarquee({ reviews }: { reviews: Review[] }) {
                     key={i} 
                     size={16} 
                     fill={i < review.rating ? "currentColor" : "none"} 
-                    className={i < review.rating ? "text-yellow-400" : "text-slate-200"}
+                    className={i < review.rating ? "text-yellow-400" : "text-border-color"}
                   />
                 ))}
               </div>
 
-              {/* 🟢 Fix: Text size slightly adjusted for mobile to fit nicely inside 260px */}
-              <p className="text-sm md:text-base text-slate-700 leading-relaxed font-medium mb-6 flex-1 relative z-10 line-clamp-4">
+              {/* 🟢 Changed text-slate-700 to text-text-dark */}
+              <p className="text-sm md:text-base text-text-dark leading-relaxed font-medium mb-6 flex-1 relative z-10 line-clamp-4">
                 "{review.comment}"
               </p>
 
-              <div className="flex items-center gap-4 mt-auto pt-5 border-t border-slate-50">
+              {/* 🟢 Changed border-slate-50 to border-border-color */}
+              <div className="flex items-center gap-4 mt-auto pt-5 border-t border-border-color">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-lg shrink-0 ${colorClass}`}>
                   {initial}
                 </div>
@@ -82,7 +83,8 @@ export default function TopReviewsMarquee({ reviews }: { reviews: Review[] }) {
                     {displayName}
                     <CheckCircle2 size={14} className="text-blue-500 shrink-0" />
                   </h4>
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block mt-0.5">
+                  {/* 🟢 Changed text-slate-400 to text-text-light */}
+                  <span className="text-[10px] sm:text-xs font-bold text-text-light uppercase tracking-wider block mt-0.5">
                     Petora BD Shopper
                   </span>
                 </div>

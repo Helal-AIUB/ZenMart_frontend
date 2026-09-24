@@ -9,7 +9,7 @@ import { useCartStore } from "../store/useCartStore";
 import { apiClient } from "@/services/apiClient";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import WishlistDrawer from "@/components/WishlistDrawer";
-// 🟢 Import next-intl hooks
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslations, useLocale } from "next-intl";
 
 export default function Navbar({ 
@@ -34,10 +34,10 @@ export default function Navbar({
   const [selectedCategory, setSelectedCategory] = useState("");
 
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isLangOpen, setIsLangOpen] = useState(false); // 🟢 Language Dropdown State
+  const [isLangOpen, setIsLangOpen] = useState(false); 
   
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const langRef = useRef<HTMLDivElement>(null); // 🟢 Language Dropdown Ref
+  const langRef = useRef<HTMLDivElement>(null); 
 
   const { wishlistItems, openWishlist } = useWishlistStore();
   const wishlistCount = wishlistItems.length;
@@ -75,7 +75,6 @@ export default function Navbar({
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsAccountOpen(false);
       }
-      // 🟢 Close language dropdown on outside click
       if (langRef.current && !langRef.current.contains(event.target)) {
         setIsLangOpen(false);
       }
@@ -118,12 +117,10 @@ export default function Navbar({
     }
   };
 
-  // 🟢 Language Switcher Logic
   const switchLanguage = (newLocale: string) => {
     setIsLangOpen(false);
     if (locale === newLocale) return;
     
-    // Replace the current locale in the URL with the new one
     const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
     router.push(newPath);
   };
@@ -133,7 +130,7 @@ export default function Navbar({
   return (
     <>
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white ${
+        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-card ${
           isScrolled ? "shadow-md py-2" : "border-b border-border-color py-3 lg:py-4"
         }`}
       >
@@ -150,7 +147,7 @@ export default function Navbar({
 
             <form
               onSubmit={handleSearch}
-              className="flex w-full lg:w-auto order-3 lg:order-none lg:flex-1 max-w-3xl border border-border-color rounded-full items-center pl-3 lg:pl-4 pr-1 h-11 lg:h-12 bg-gray-50 focus-within:bg-white focus-within:border-primary focus-within:shadow-sm transition-all"
+              className="flex w-full lg:w-auto order-3 lg:order-none lg:flex-1 max-w-3xl border border-border-color rounded-full items-center pl-3 lg:pl-4 pr-1 h-11 lg:h-12 bg-background focus-within:bg-card focus-within:border-primary focus-within:shadow-sm transition-all"
             >
               <div className="relative flex items-center border-r border-border-color pr-2 lg:pr-3">
                 <select
@@ -158,9 +155,9 @@ export default function Navbar({
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="bg-transparent text-xs lg:text-sm font-medium text-text-gray focus:outline-none cursor-pointer appearance-none pr-5 lg:pr-6 max-w-[110px] lg:max-w-none truncate"
                 >
-                  <option value="">{t("allCategories")}</option>
+                  <option value="" className="bg-card">{t("allCategories")}</option>
                   {safeCategories.map((category: any) => (
-                    <option key={category.id} value={category.id}>
+                    <option key={category.id} value={category.id} className="bg-card">
                       {category.title}
                     </option>
                   ))}
@@ -192,9 +189,8 @@ export default function Navbar({
               </button>
             </form>
 
-            {/* 🟢 Removed "New Arrivals" and kept Blog & Brands side by side */}
             <div className="hidden xl:flex items-center gap-6 text-sm font-medium text-text-gray lg:order-none">
-              <Link href="/blog" className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors">
+              <Link href="/blog" className="flex items-center gap-1.5 text-sm font-bold text-text-dark hover:text-primary transition-colors">
                 <BookOpen size={18} /> {t("blog")}
               </Link>
               <Link href="#" className="flex items-center gap-1.5 hover:text-primary transition-colors">
@@ -207,12 +203,10 @@ export default function Navbar({
 
             <div className="flex items-center gap-3 sm:gap-4 lg:gap-5 order-2 lg:order-none shrink-0">
               
-              {/* 🟢 Beautiful & Responsive Language Switcher */}
-              {/* 🟢 Beautiful & Responsive Language Switcher */}
               <div className="relative" ref={langRef}>
                 <button 
                   onClick={() => setIsLangOpen(!isLangOpen)} 
-                  className="flex items-center justify-center gap-1.5 text-text-dark hover:text-primary transition-colors group cursor-pointer bg-gray-50 hover:bg-gray-100 border border-border-color px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg shadow-sm"
+                  className="flex items-center justify-center gap-1.5 text-text-dark hover:text-primary transition-colors group cursor-pointer bg-background hover:bg-border-color border border-border-color px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg shadow-sm"
                   title="Switch Language"
                 >
                   <img 
@@ -226,17 +220,17 @@ export default function Navbar({
                 </button>
 
                 {isLangOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-36 bg-white border border-border-color rounded-xl shadow-xl py-1 z-50 animate-fadeIn">
+                  <div className="absolute right-0 top-full mt-2 w-36 bg-card border border-border-color rounded-xl shadow-xl py-1 z-50 animate-fadeIn">
                     <button 
                       onClick={() => switchLanguage('en')} 
-                      className={`w-full text-left px-4 py-2.5 text-xs lg:text-sm font-bold transition-colors flex items-center gap-2.5 ${locale === 'en' ? 'text-primary bg-primary-light/20' : 'text-text-dark hover:bg-gray-50 hover:text-primary'}`}
+                      className={`w-full text-left px-4 py-2.5 text-xs lg:text-sm font-bold transition-colors flex items-center gap-2.5 ${locale === 'en' ? 'text-primary bg-primary-light' : 'text-text-dark hover:bg-background hover:text-primary'}`}
                     >
                       <img src="https://flagcdn.com/w20/us.png" alt="US" className="w-4 h-auto rounded-[2px] shadow-xs" /> 
                       English
                     </button>
                     <button 
                       onClick={() => switchLanguage('bn')} 
-                      className={`w-full text-left px-4 py-2.5 text-xs lg:text-sm font-bold transition-colors flex items-center gap-2.5 ${locale === 'bn' ? 'text-primary bg-primary-light/20' : 'text-text-dark hover:bg-gray-50 hover:text-primary'}`}
+                      className={`w-full text-left px-4 py-2.5 text-xs lg:text-sm font-bold transition-colors flex items-center gap-2.5 ${locale === 'bn' ? 'text-primary bg-primary-light' : 'text-text-dark hover:bg-background hover:text-primary'}`}
                     >
                       <img src="https://flagcdn.com/w20/bd.png" alt="BD" className="w-4 h-auto rounded-[2px] shadow-xs" /> 
                       বাংলা
@@ -244,6 +238,8 @@ export default function Navbar({
                   </div>
                 )}
               </div>
+
+              <ThemeToggle />
 
               <button onClick={openWishlist} className="relative text-text-dark hover:text-primary transition-colors group cursor-pointer" title={t("wishlist")}>
                 <svg className="w-5 h-5 lg:w-6 lg:h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +265,7 @@ export default function Navbar({
 
               <div className="relative pl-3 lg:pl-4 border-l border-border-color" ref={dropdownRef}>
                 <button onClick={() => setIsAccountOpen(!isAccountOpen)} className="flex items-center gap-2 lg:gap-3 group cursor-pointer focus:outline-none">
-                  <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-gray-200 overflow-hidden border border-border-color">
+                  <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-border-color overflow-hidden border border-border-color">
                     {user ? (
                       <div className="w-full h-full bg-primary flex items-center justify-center text-white font-bold text-base lg:text-lg">
                         {user.first_name ? user.first_name.charAt(0).toUpperCase() : user.username?.charAt(0).toUpperCase()}
@@ -291,19 +287,19 @@ export default function Navbar({
                 </button>
 
                 {isAccountOpen && (
-                  <div className="absolute right-0 mt-3 w-48 bg-white border border-border-color rounded-xl shadow-xl py-2 z-50 animate-fadeIn">
+                  <div className="absolute right-0 mt-3 w-48 bg-card border border-border-color rounded-xl shadow-xl py-2 z-50 animate-fadeIn">
                     {user ? (
                       <>
-                        <Link href="/profile" onClick={() => setIsAccountOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-text-dark hover:bg-gray-50 hover:text-primary transition-colors">
+                        <Link href="/profile" onClick={() => setIsAccountOpen(false)} className="block px-4 py-2.5 text-sm font-medium text-text-dark hover:bg-background hover:text-primary transition-colors">
                           {t("myProfile")}
                         </Link>
                         <div className="border-t border-border-color my-1"></div>
-                        <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors cursor-pointer">
+                        <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-sm text-badge-red hover:bg-background font-medium transition-colors cursor-pointer">
                           {t("logout")}
                         </button>
                       </>
                     ) : (
-                      <Link href="/signin" onClick={() => setIsAccountOpen(false)} className="block px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors text-center">
+                      <Link href="/signin" onClick={() => setIsAccountOpen(false)} className="block px-4 py-2.5 text-sm font-semibold text-primary hover:bg-background transition-colors text-center">
                         {t("login")}
                       </Link>
                     )}
@@ -325,7 +321,7 @@ export default function Navbar({
               {safeCategories.length === 0 ? (
                 <div className="w-full flex gap-4">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="h-4 w-16 lg:w-20 bg-gray-200 rounded animate-pulse shrink-0"></div>
+                    <div key={i} className="h-4 w-16 lg:w-20 bg-border-color rounded animate-pulse shrink-0"></div>
                   ))}
                 </div>
               ) : (
