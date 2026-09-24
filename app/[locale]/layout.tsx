@@ -5,6 +5,11 @@ import StoreInit from "@/components/StoreInit";
 import MetaPixel from "@/components/MetaPixel";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
+import Navbar from "@/components/Navbar"; 
+import ReactQueryProvider from "@/providers/ReactQueryProvider"; 
+// 🟢 next-intl ইম্পোর্ট করা হলো
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -62,50 +67,67 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
+  // 🟢 গ্লোবাল ট্রান্সলেশন মেসেজ ফেচ করা হলো
+  const messages = await getMessages();
+
   let gaId = null;
   let pixelId = null;
   let gtmId = null;
+  let initialSettings = {};
+  let initialCategories = [];
+
   try {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
-    const res = await fetch(`${apiUrl}/store/settings/`, {
-      next: { revalidate: 3600 }, 
-    });
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+    
+    const [settingsRes, categoriesRes] = await Promise.all([
+      fetch(`${apiUrl}/store/settings/`, { next: { revalidate: 3600 } }),
+      fetch(`${apiUrl}/store/collections/`, { next: { revalidate: 3600 } })
+    ]);
 
-    if (res.ok) {
-      const data = await res.json();
-      const settings = Array.isArray(data)
-        ? data[0]
-        : data?.results?.[0] || data;
+    if (settingsRes.ok) {
+      const data = await settingsRes.json();
+      initialSettings = Array.isArray(data) ? data[0] : data?.results?.[0] || data;
 
-      if (settings) {
-        gaId = settings.google_analytics_id;
-        pixelId = settings.meta_pixel_id;
-        gtmId = settings.gtm_id;
+      if (initialSettings) {
+        gaId = (initialSettings as any).google_analytics_id;
+        pixelId = (initialSettings as any).meta_pixel_id;
+        gtmId = (initialSettings as any).gtm_id;
       }
     }
+
+    if (categoriesRes.ok) {
+      const catData = await categoriesRes.json();
+      initialCategories = Array.isArray(catData) ? catData : catData?.results || [];
+    }
   } catch (error) {
-    console.error("Failed to fetch store settings for Tracking IDs:", error);
+    console.error("Failed to fetch global layout data:", error);
   }
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased custom-scrollbar`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {pixelId && <MetaPixel pixelId={pixelId} />}
-          
-          <StoreInit />
+        <ReactQueryProvider>
+          {/* 🟢 NextIntlClientProvider দিয়ে পুরো অ্যাপ র‍্যাপ করা হলো */}
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {pixelId && <MetaPixel pixelId={pixelId} />}
+              
+              <StoreInit />
 
-          {children}
+              <Navbar initialCategories={initialCategories} initialSettings={initialSettings} />
 
-          {gaId && <GoogleAnalytics gaId={gaId} />}
-          {gtmId && <GoogleTagManager gtmId={gtmId} />}
-        </ThemeProvider>
+              {children}
+
+              {gaId && <GoogleAnalytics gaId={gaId} />}
+              {gtmId && <GoogleTagManager gtmId={gtmId} />}
+            </ThemeProvider>
+          </NextIntlClientProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );
