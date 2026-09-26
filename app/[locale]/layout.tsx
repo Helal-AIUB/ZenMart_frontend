@@ -5,9 +5,7 @@ import StoreInit from "@/components/StoreInit";
 import MetaPixel from "@/components/MetaPixel";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
-import Navbar from "@/components/Navbar"; 
 import ReactQueryProvider from "@/providers/ReactQueryProvider"; 
-// 🟢 next-intl ইম্পোর্ট করা হলো
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
@@ -67,7 +65,6 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  // 🟢 গ্লোবাল ট্রান্সলেশন মেসেজ ফেচ করা হলো
   const messages = await getMessages();
 
   let gaId = null;
@@ -107,7 +104,6 @@ export default async function LocaleLayout({
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased custom-scrollbar`}>
         <ReactQueryProvider>
-          {/* 🟢 NextIntlClientProvider দিয়ে পুরো অ্যাপ র‍্যাপ করা হলো */}
           <NextIntlClientProvider locale={locale} messages={messages}>
             <ThemeProvider
               attribute="class"
@@ -118,8 +114,6 @@ export default async function LocaleLayout({
               {pixelId && <MetaPixel pixelId={pixelId} />}
               
               <StoreInit />
-
-              <Navbar initialCategories={initialCategories} initialSettings={initialSettings} />
 
               {children}
 
